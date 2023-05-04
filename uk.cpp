@@ -63,7 +63,7 @@ QString UK::host()
 
 void UK::errorQML(QList<QQmlError> le)
 {
-    log(le.last().toString().toUtf8());
+    ////log(le.last().toString().toUtf8());
     setUWarning(le.last().toString());
 }
 void UK::ukClose(QQuickCloseEvent *close){
@@ -187,7 +187,7 @@ bool UK::runAppFromZip(QByteArray url, QByteArray localFolder)
             bool modoCodeload=true;
             QString url0;
             if(modoCodeload){
-                url0=u.replace(".git", "/zip/master");
+                url0=u.replace(".git", "/zip/main");
                 urlZipGit=url0.replace("https://github.com/", "https://codeload.github.com/");
 
                 QDateTime rdt = QDateTime::currentDateTime();
@@ -197,7 +197,7 @@ bool UK::runAppFromZip(QByteArray url, QByteArray localFolder)
                 //url of download zip no codeload
                 //https://github.com/nextsigner/qt_qml_chat_server/archive/master.zip
 
-                url0=u.replace(".git", "/archive/master.zip");
+                url0=u.replace(".git", "/archive/main.zip");
                 urlZipGit=url0;
             }
             qInfo()<<"Downloading zip file: "<<urlZipGit;
@@ -506,10 +506,10 @@ bool UK::runAppFromZip(QByteArray url, QByteArray localFolder)
     cl.append(getPath(2));
     cl.append("/");
     cl.append(carpetaDestino);
-    log("Run "+cl);
+    //log("Run "+cl);
     run(cl);
     while (proc->waitForFinished(250)&&proc->isOpen()) {
-        log(".");
+        //log(".");
     }
     //sleep(5);
     cl = "cp -R ";
@@ -530,7 +530,7 @@ bool UK::runAppFromZip(QByteArray url, QByteArray localFolder)
     //cl.append(carpetaDestino);
     //cl.append(" -f");
     //cl.append("-master");
-    log(cl);
+    //log(cl);
     run(cl);
 #endif
 #endif
@@ -574,7 +574,7 @@ bool UK::downloadRemoteFolder(QString urlFolder, QString list, QString dirDestin
                     lba.append("File ");
                     lba.append(rd);
                     lba.append(" downloaded.");
-                    log(lba);
+                    //log(lba);
                 }
             }
             qml.write(code);
@@ -584,7 +584,7 @@ bool UK::downloadRemoteFolder(QString urlFolder, QString list, QString dirDestin
                 lba="";
                 lba.append("Error downloading QML  ");
                 lba.append(ro);
-                log(lba);
+                //log(lba);
             }
         }
     }
@@ -768,7 +768,7 @@ bool UK::upkToFolder(QByteArray upk, QByteArray user, QByteArray key, QByteArray
             lba="";
             lba.append("Upk file not exist: ");
             lba.append(upk);
-            log(lba);
+            //log(lba);
         }
         return false;
     }else{
@@ -835,7 +835,7 @@ bool UK::upkToFolder(QByteArray upk, QByteArray user, QByteArray key, QByteArray
 
         QString fn;
         fn.append(QString(urlNf).replace("//", "/"));
-        this->log(fn.toUtf8());
+        //this->//log(fn.toUtf8());
         //qInfo()<<"UP fn:"<<fn;
         //QStringList folders=fn.split("/");
         int folderLength=fn.split('@').length();
@@ -898,7 +898,7 @@ bool UK::isFree(QString upk)
             lba="";
             lba.append("isFree() revision Upk file not open or not permission: ");
             lba.append(upk.toUtf8());
-            log(lba);
+            ////log(lba);
         }
         return false;
     }else{
@@ -906,7 +906,7 @@ bool UK::isFree(QString upk)
             lba="";
             lba.append("isFree() revision Upk file open in: ");
             lba.append(upk.toUtf8());
-            log(lba);
+            //log(lba);
         }
     }
 
@@ -1022,8 +1022,8 @@ bool UK::loadUpk(QString upkLocation, bool closeAppLauncher, QString user, QStri
     return false;
 }
 
-bool UK::downloadGit(QByteArray url, QByteArray localFolder)
-{
+
+bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
     QString u;
     u.append(url);
     QStringList mUrl0=u.split("/");
@@ -1051,7 +1051,7 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder)
         bool modoCodeload=true;
         QString url0;
         if(modoCodeload){
-            url0=u.replace(".git", "/zip/master");
+            url0=u.replace(".git", "/zip/main");
             urlZipGit=url0.replace("https://github.com/", "https://codeload.github.com/");
 
             QDateTime rdt = QDateTime::currentDateTime();
@@ -1061,13 +1061,16 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder)
             //url of download zip no codeload
             //https://github.com/nextsigner/qt_qml_chat_server/archive/master.zip
 
-            url0=u.replace(".git", "/archive/master.zip");
+            url0=u.replace(".git", "/archive/main.zip");
             urlZipGit=url0;
         }
         qInfo()<<"Downloading zip file: "<<urlZipGit;
     }
+    if(!parseUrl){
+        urlZipGit="";
+        urlZipGit.append(url);
 
-
+    }
     qInfo()<<"Downloading from GitHub: "<<url;
     qInfo()<<"Download Folder Location: "<<carpetaDestino;
     QDateTime a = QDateTime::currentDateTime();
@@ -1080,8 +1083,8 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder)
     tempFile.append(QString::number(a.toMSecsSinceEpoch()).toUtf8());
 #endif
     tempFile.append(".zip");
-    qInfo("temp zip location "+tempFile);
-    qInfo()<<"Url Zip Git: "<<urlZipGit;
+    qInfo("Android downloadGit()... temp zip location "+tempFile);
+    qInfo()<<"Android downloadGit()... Url Zip Git: "<<urlZipGit;
 
 
 
@@ -1222,6 +1225,15 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder)
     QByteArray carpDestinoFinal;
     carpDestinoFinal.append(localFolder);
     qInfo()<<"Local Folder: "<<carpDestinoFinal;
+
+    /*QByteArray-* logFile="";
+    logFile.append("Local Folder: ");
+    logFile.append(carpDestinoFinal);
+    QByteArray fpLogFile="";
+    fpLogFile.append(getPath(3));
+    fpLogFile.append("/log.txt");
+    setFile(fpLogFile, logFile);*/
+
     QString nFolder=carpDestinoFinal;
     //nFolder.append("/");
     //nFolder.append(module);
@@ -1252,10 +1264,19 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder)
 
     QuaZipFile file(&zip);
 
+    QByteArray fpLogFile="";
+    fpLogFile.append(getPath(3));
+    fpLogFile.append("/log.txt");
+    QByteArray logFile="";
+//        logFile.append("Local Folder: ");
+//        logFile.append(carpDestinoFinal);
+
+//        setFile(fpLogFile, logFile);
+
     QString carpeta="aaa";
     int v=0;
     for(bool f=zip.goToFirstFile(); f; f=zip.goToNextFile()) {
-        if(v>=zip.getFileNameList().size()){
+        if(v>zip.getFileNameList().size()){
             break;
         }
         file.open(QIODevice::ReadOnly);
@@ -1273,6 +1294,12 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder)
 
             if(nfn3.at(nfn3.size()-1)!="/"){
                 qInfo()<<"Destino de archivo: "<<nfn3;
+                qDebug()<<"Destino de archivo: "<<nfn3;
+                QByteArray lfd="";
+                lfd.append("Destino de archivo: ");
+                lfd.append(nfn3);
+                lfd.append("\n");
+                logFile.append(lfd);
                 QFile nfile(nfn3);
                 if(!nfile.open(QIODevice::WriteOnly)){
                     qInfo()<<"Error al abrir archivo "<<nfn3;
@@ -1282,6 +1309,11 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder)
                 }
             }else{
                 qInfo()<<"Destino de carpeta: "<<nfn3;
+                QByteArray lfd="";
+                lfd.append("Destino de carpeta: ");
+                lfd.append(nfn3);
+                lfd.append("\n");
+                logFile.append(lfd);
                 QDir dnfn(nfn3);
                 dnfn.mkpath(".");
             }
@@ -1290,6 +1322,7 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder)
         v++;
     }
     zip.close();
+    setFile(fpLogFile, logFile);
 #else
     QuaZip zip(tempFile.constData());
     zip.open(QuaZip::mdUnzip);
@@ -1350,10 +1383,10 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder)
     cl.append(getPath(2));
     cl.append("/");
     cl.append(carpetaDestino);
-    log("Run "+cl);
+    //log("Run "+cl);
     run(cl);
     while (proc->waitForFinished(250)&&proc->isOpen()) {
-        log(".");
+        //log(".");
     }
     //sleep(5);
     cl = "cp -R ";
@@ -1374,7 +1407,7 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder)
     //cl.append(carpetaDestino);
     //cl.append(" -f");
     //cl.append("-master");
-    log(cl);
+    //log(cl);
     run(cl);
 #endif
 #endif
@@ -1525,12 +1558,12 @@ bool UK::ejecutarLineaDeComandoAparte(QString lineaDeComando)
 
 void UK::salidaRun()
 {
-    log(proc->readAllStandardOutput());
+    //log(proc->readAllStandardOutput());
 }
 
 void UK::salidaRunError()
 {
-    log(proc->readAllStandardError());
+    //log(proc->readAllStandardError());
 }
 
 void UK::finalizaRun(int e)
@@ -1538,7 +1571,7 @@ void UK::finalizaRun(int e)
     QByteArray s;
     s.append("command line finished with status ");
     s.append(QString::number(e).toUtf8());
-    log(s);
+    //log(s);
     proc->close();
 }
 
@@ -1634,13 +1667,17 @@ QString UK::getPath(int path)
     if(path==7){//Current Home
         r = QStandardPaths::standardLocations(QStandardPaths::HomeLocation).at(0);
     }
+    if(path==8){//Current Desktop
+        //r = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+        r="/storage/emulated/0/Documents";
+    }
     QDir dir(r);
     if (!dir.exists()) {
         if(debugLog){
             lba="";
             lba.append("Making folder ");
             lba.append(r.toUtf8());
-            log(lba);
+            //log(lba);
         }
         dir.mkpath(".");
     }else{
@@ -1845,7 +1882,7 @@ QString UK::decData(QByteArray d0, QString user, QString key)
                     if(debugLog){
                         lba="";
                         lba.append("Error extract! pass data not found");
-                        log(lba);
+                        //log(lba);
                     }
                     return "";
                 }
@@ -1935,7 +1972,7 @@ QByteArray UK::getHttpFile(QByteArray url)
             lba="";
             lba.append("Failure ");
             lba.append(reply->errorString().toUtf8());
-            log(lba);
+            //log(lba);
         }
         err.append(reply->errorString().toUtf8());
         return err;
@@ -1951,12 +1988,14 @@ void UK::httpReadyRead()
 
 bool UK::downloadZipFile(QByteArray url, QByteArray ubicacion)
 {
-    log("downloading zip file from: "+url);
+    qInfo("downloading zip file from: "+url);
+    //log("downloading zip file from: "+url);
     uZipUrl=QString(url);
     uZipLocalLocation="";
     uZipLocalLocation.append(ubicacion);
     uZipSize=-1;
     getZipFileSizeForDownload(url);
+    qInfo("2 downloading zip file from: "+url);
     int v=0;
     while (uZipSize<=0) {
         //qInfo()<<"uZipSize V: "<<v;
@@ -2019,7 +2058,7 @@ bool UK::downloadZipFile(QByteArray url, QByteArray ubicacion)
             QByteArray log100;
             log100.append("Failure ");
             log100.append(reply->errorString().toUtf8());
-            log(log100);
+            //log(log100);
         }
         reply->deleteLater();
         return false;
@@ -2055,7 +2094,7 @@ void UK::sendFile(QString file, QString phpReceiver)
     if(debugLog){
         lba="";
         lba.append("Starting sending data...");
-        log(lba);
+        //log(lba);
     }
     QNetworkAccessManager *am = new QNetworkAccessManager(this);
     QByteArray origen;
@@ -2074,7 +2113,7 @@ void UK::sendFile(QString file, QString phpReceiver)
         lba="";
         lba.append("Mime type: ");
         lba.append(type.name().toUtf8());
-        log(lba);
+        //log(lba);
     }
     QByteArray urlReceiver;
     urlReceiver.append(phpReceiver.toUtf8());
@@ -2100,21 +2139,21 @@ void UK::sendFile(QString file, QString phpReceiver)
         lba.append(destino);
         lba.append(" Ruta: ");
         lba.append(path);
-        log(lba);
+        //log(lba);
     }
     QFile localFile(path);
     if (!localFile.open(QIODevice::ReadOnly)){
         if(debugLog){
             lba="";
             lba.append("Error while opening file.");
-            log(lba);
+            //log(lba);
         }
         return;
     }else{
         if(debugLog){
             lba="";
             lba.append("Opening file...");
-            log(lba);
+            //log(lba);
         }
     }
     data.append(localFile.readAll());
@@ -2161,7 +2200,7 @@ void UK::uploadProgress(qint64 bytesSend, qint64 bytesTotal)
     nl.append(uZipUrl);
     nl.append(" %");
     nl.append(sd1.at(0));
-    log(nl);
+    //log(nl);
 }
 
 void UK::downloadProgress(qint64 bytesSend, qint64 bytesTotal)
@@ -2196,7 +2235,7 @@ void UK::downloadProgress(qint64 bytesSend, qint64 bytesTotal)
     nl.append(uZipUrl);
     nl.append(" %");
     nl.append(sd1.at(0));
-    log(nl);
+    ////log(nl);
 }
 void UK::sendFinished()
 {
@@ -2204,7 +2243,7 @@ void UK::sendFinished()
         lba="";
         lba.append("Sending data finished!\nResponse: ");
         lba.append(respuentaSendDatos->readAll());
-        log(lba);
+        //log(lba);
     }
     setUploadState(respuentaSendDatos->readAll());
 }
@@ -2251,14 +2290,14 @@ bool UK::sqliteInit(QString pathName)
         if(debugLog){
             lba="";
             lba.append("Sqlite open error");
-            log(lba);
+            //log(lba);
         }
     }else{
         if(debugLog){
             lba="";
             lba.append("Sqlite open ");
             lba.append(rutaBD);
-            log(lba);
+            //log(lba);
         }
     }
     return ret;
@@ -2273,12 +2312,12 @@ bool UK::sqlQuery(QString query)
             lba="";
             lba.append("sql query exec: ");
             lba.append(query);
-            log(lba);
+            //log(lba);
 
             QByteArray d;
             d.append("sql query exec: ");
             d.append(query);
-            log(d);
+            //log(d);
         }
         return true;
     }
@@ -2288,7 +2327,7 @@ bool UK::sqlQuery(QString query)
         lba.append(query);
         lba.append(" \nError SQL! ");
         lba.append(q.lastError().text());
-        log(lba);
+        //log(lba);
     }
     return false;
 }
@@ -2326,14 +2365,14 @@ QList<QObject *> UK::getSqlData(QString query)
             cc.append(" ");
             cc.append("Column count result: ");
             cc.append(QString::number(cantcols).toUtf8());
-            log(cc);
+            //log(cc);
         }
     }else{
         if(debugLog){
             lba="";
             lba.append("Sql query no exec: ");
             lba.append(consultar.lastError().text().toUtf8());
-            log(lba);
+            //log(lba);
         }
     }
     return ret;
@@ -2416,7 +2455,7 @@ bool UK::setFile(QByteArray fileName, QByteArray fileData, QByteArray codec)
         lba="";
         lba.append("Cannot open file for writing: ");
         lba.append(file.errorString().toUtf8());
-        log(lba);
+        ////log(lba);
         return false;
     }
     QTextStream out(&file);
@@ -2471,7 +2510,7 @@ QString UK::getUpkTempPath()
         lba="";
         lba.append("Temp folder of Qmls: ");
         lba.append(pq.toUtf8());
-        //log(lba);
+        ////log(lba);
     }
     QDir dir0(pq);
     if (!dir0.exists()) {
@@ -3013,7 +3052,7 @@ QString UK::decPrivateData(QByteArray d0, QString user, QString key)
                     if(debugLog){
                         lba="";
                         lba.append("Error extract! pass data not found.");
-                        log(lba);
+                        //log(lba);
                     }
                     return "";
                 }
@@ -3112,7 +3151,7 @@ void UK::downloadZipProgress(qint64 bytesSend, qint64 bytesTotal)
     nl.append(sd1.at(0).toUtf8());
     //nl.append(" Size: ");
     //nl.append(QString::number(uZipSize));
-    log(nl);
+    ////log(nl);
 }
 
 #ifdef Q_OS_WIN

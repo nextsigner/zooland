@@ -369,7 +369,7 @@ public slots:
     bool upkToFolder(QByteArray upk, QByteArray user, QByteArray key, QByteArray folderDestination);
     bool isFree(QString upk);
     bool loadUpk(QString upkLocation, bool closeAppLauncher, QString user, QString key);
-    bool downloadGit(QByteArray url, QByteArray localFolder);
+    bool downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl);
     void loadQml(const QString qml);
     void restartApp();
     void restartApp(QString args);
