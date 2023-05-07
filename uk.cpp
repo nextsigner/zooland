@@ -65,6 +65,10 @@ void UK::errorQML(QList<QQmlError> le)
 {
     ////log(le.last().toString().toUtf8());
     setUWarning(le.last().toString());
+    QString error="";
+    error.append("Zooland QML Error: ");
+    error.append(le.last().toString());
+    setUkStd(error);
 }
 void UK::ukClose(QQuickCloseEvent *close){
     if(close){
@@ -286,7 +290,11 @@ bool UK::runAppFromZip(QByteArray url, QByteArray localFolder)
             QString nfn3 = nfn2;//.replace("%20", " ");
 
             if(nfn3.at(nfn3.size()-1)!="/"){
-                qInfo()<<"Destino de archivo: "<<nfn3;
+                QByteArray ukStdString="";
+                ukStdString.append("Destino de archivo: ");
+                ukStdString.append(nfn3);
+                setUkStd(ukStdString);
+                qInfo()<<ukStdString;
                 QFile nfile(nfn3);
                 if(!nfile.open(QIODevice::WriteOnly)){
                     qInfo()<<"Error al abrir archivo "<<nfn3;
@@ -349,7 +357,11 @@ bool UK::runAppFromZip(QByteArray url, QByteArray localFolder)
             QString nfn3 = nfn2.replace(" ", "%20");
 
             if(nfn3.at(nfn3.size()-1)!="/"){
-                qInfo()<<"Destino de archivo: "<<nfn3;
+                QByteArray ukStdString="";
+                ukStdString.append("Destino de archivo: ");
+                ukStdString.append(nfn3);
+                setUkStd(ukStdString);
+                qInfo()<<ukStdString;
                 QFile nfile(nfn3);
                 if(!nfile.open(QIODevice::WriteOnly)){
                     qInfo()<<"Error al abrir archivo "<<nfn3;
@@ -428,7 +440,11 @@ bool UK::runAppFromZip(QByteArray url, QByteArray localFolder)
             QString nfn3 = nfn2.replace(" ", "%20");
 
             if(nfn3.at(nfn3.size()-1)!="/"){
-                qInfo()<<"Destino de archivo: "<<nfn3;
+                QByteArray ukStdString="";
+                ukStdString.append("Destino de archivo: ");
+                ukStdString.append(nfn3);
+                setUkStd(ukStdString);
+                qInfo()<<ukStdString;
                 QFile nfile(nfn3);
                 if(!nfile.open(QIODevice::WriteOnly)){
                     qInfo()<<"Error al abrir archivo "<<nfn3;
@@ -472,7 +488,11 @@ bool UK::runAppFromZip(QByteArray url, QByteArray localFolder)
             QByteArray banfn3;
             banfn3.append(nfn3.at(nfn3.size()-1));
             if(banfn3!="/"){
-                qInfo()<<"Destino de archivo: "<<nfn3;
+                QByteArray ukStdString="";
+                ukStdString.append("Destino de archivo: ");
+                ukStdString.append(nfn3);
+                setUkStd(ukStdString);
+                qInfo()<<ukStdString;
                 QFile nfile(nfn3);
                 if(!nfile.open(QIODevice::WriteOnly)){
                     qInfo()<<"Error al abrir archivo "<<nfn3;
@@ -845,7 +865,7 @@ bool UK::upkToFolder(QByteArray upk, QByteArray user, QByteArray key, QByteArray
             nf.append(folderDestination);
             nf.append("/");
             nf.append(up);
-            mkdir(nf);
+            mkdir(nf, true);
         }
         if(folderLength==4){
             QString up=fn.split('@').at(fn.split('@').length()-3);
@@ -853,7 +873,7 @@ bool UK::upkToFolder(QByteArray upk, QByteArray user, QByteArray key, QByteArray
             nf.append(folderDestination);
             nf.append("/");
             nf.append(up);
-            mkdir(nf);
+            mkdir(nf, true);
         }
         if(folderLength==5){
             QString up=fn.split('@').at(fn.split('@').length()-4);
@@ -861,7 +881,7 @@ bool UK::upkToFolder(QByteArray upk, QByteArray user, QByteArray key, QByteArray
             nf.append(folderDestination);
             nf.append("/");
             nf.append(up);
-            mkdir(nf);
+            mkdir(nf, true);
         }
         if(folderLength==6){
             QString up=fn.split('@').at(fn.split('@').length()-5);
@@ -869,7 +889,7 @@ bool UK::upkToFolder(QByteArray upk, QByteArray user, QByteArray key, QByteArray
             nf.append(folderDestination);
             nf.append("/");
             nf.append(up);
-            mkdir(nf);
+            mkdir(nf, true);
         }
         QByteArray ext;
         ext.append(fn.mid(fn.length()-4,fn.length()).toUtf8());
@@ -1024,6 +1044,7 @@ bool UK::loadUpk(QString upkLocation, bool closeAppLauncher, QString user, QStri
 
 
 bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
+    setUkStd("downloadGit()...");
     QString u;
     u.append(url);
     QStringList mUrl0=u.split("/");
@@ -1083,14 +1104,18 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
     tempFile.append(QString::number(a.toMSecsSinceEpoch()).toUtf8());
 #endif
     tempFile.append(".zip");
+
     qInfo("Android downloadGit()... temp zip location "+tempFile);
     qInfo()<<"Android downloadGit()... Url Zip Git: "<<urlZipGit;
+    setUkStd("Android downloadGit()... temp zip location "+tempFile);
+    setUkStd("Android downloadGit()... Url Zip Git: "+urlZipGit);
 
 
 
     bool d=downloadZipFile(urlZipGit.toUtf8(), tempFile);
     if(!d){
         qDebug("Git Zip not downloaded.");
+        setUkStd("Git Zip not downloaded.");
         return false;
     }
     qInfo("Git Zip downloaded.");
@@ -1139,7 +1164,11 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
             QString nfn3 = nfn2;//.replace(" ", "%20");
 
             if(nfn3.at(nfn3.size()-1)!="/"){
-                qInfo()<<"Destino de archivo: "<<nfn3;
+                QByteArray ukStdString="";
+                ukStdString.append("Destino de archivo: ");
+                ukStdString.append(nfn3);
+                setUkStd(ukStdString);
+                qInfo()<<ukStdString;
                 QFile nfile(nfn3);
                 if(!nfile.open(QIODevice::WriteOnly)){
                     qInfo()<<"Error al abrir archivo "<<nfn3;
@@ -1202,7 +1231,11 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
             QString nfn3 = nfn2.replace(" ", "%20");
 
             if(nfn3.at(nfn3.size()-1)!="/"){
-                qInfo()<<"Destino de archivo: "<<nfn3;
+                QByteArray ukStdString="";
+                ukStdString.append("Destino de archivo: ");
+                ukStdString.append(nfn3);
+                setUkStd(ukStdString);
+                qInfo()<<ukStdString;
                 QFile nfile(nfn3);
                 if(!nfile.open(QIODevice::WriteOnly)){
                     qInfo()<<"Error al abrir archivo "<<nfn3;
@@ -1225,6 +1258,7 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
     QByteArray carpDestinoFinal;
     carpDestinoFinal.append(localFolder);
     qInfo()<<"Local Folder: "<<carpDestinoFinal;
+    setUkStd("Local Folder: "+carpDestinoFinal);
 
     /*QByteArray-* logFile="";
     logFile.append("Local Folder: ");
@@ -1293,12 +1327,25 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
             QString nfn3 = nfn2.replace(" ", "%20");
 
             if(nfn3.at(nfn3.size()-1)!="/"){
-                qInfo()<<"Destino de archivo: "<<nfn3;
-                qDebug()<<"Destino de archivo: "<<nfn3;
+                QByteArray ukStdString="";
+                ukStdString.append("Destino de archivo: ");
+                ukStdString.append(nfn3);
+                setUkStd(ukStdString);
+                qInfo()<<ukStdString;
+                QByteArray ukStdString="";
+                ukStdString.append("Destino de archivo: ");
+                ukStdString.append(nfn3);
+                setUkStd(ukStdString);
+                qInfo()<<ukStdString;
                 QByteArray lfd="";
                 lfd.append("Destino de archivo: ");
                 lfd.append(nfn3);
                 lfd.append("\n");
+                QByteArray ukStdString="";
+                ukStdString.append("Destino de archivo: ");
+                ukStdString.append(nfn3);
+                setUkStd(ukStdString);
+                qInfo()<<ukStdString;
                 logFile.append(lfd);
                 QFile nfile(nfn3);
                 if(!nfile.open(QIODevice::WriteOnly)){
@@ -1349,7 +1396,12 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
             QByteArray banfn3;
             banfn3.append(nfn3.at(nfn3.size()-1));
             if(banfn3!="/"){
-                qInfo()<<"Destino de archivo: "<<nfn3;
+
+                QByteArray ukStdString="";
+                ukStdString.append("Destino de archivo: ");
+                ukStdString.append(nfn3);
+                setUkStd(ukStdString);
+                qInfo()<<ukStdString;
                 QFile nfile(nfn3);
                 if(!nfile.open(QIODevice::WriteOnly)){
                     qInfo()<<"Error al abrir archivo "<<nfn3;
@@ -2235,6 +2287,7 @@ void UK::downloadProgress(qint64 bytesSend, qint64 bytesTotal)
     nl.append(uZipUrl);
     nl.append(" %");
     nl.append(sd1.at(0));
+    setUkStd(nl);
     ////log(nl);
 }
 void UK::sendFinished()
@@ -2480,11 +2533,30 @@ bool UK::folderExist(const QByteArray folder)
     return  QDir(folder.constData()).exists();
 }
 
-bool UK::mkdir(const QString path)
+QList<QString> UK::getFileList(QByteArray folder)
+{
+    QList<QString> list;
+
+    //QDir directory("/media/ns/WD/vnRicardo");
+    QDir directory(folder);
+    QStringList images = directory.entryList(QStringList() << "*.mp4" << "*.mkv",QDir::Files);
+    foreach(QString filename, images) {
+    //do whatever you need to do
+        list.append(filename);
+    }
+    return list;
+}
+
+bool UK::mkdir(const QString path, bool absolute)
 {
     QDir dir0(path);
+    setUkStd("Mkdir: ["+path+"]");
     if (!dir0.exists()) {
-        dir0.mkpath(".");
+        if(!absolute){
+            QDir::root().mkpath(path);
+        }else{
+            dir0.mkpath(".");
+        }
     }
     return dir0.exists();
 }
@@ -3149,6 +3221,7 @@ void UK::downloadZipProgress(qint64 bytesSend, qint64 bytesTotal)
     nl.append(uZipUrl.toUtf8());
     nl.append(" %");
     nl.append(sd1.at(0).toUtf8());
+    setUkStd(nl);
     //nl.append(" Size: ");
     //nl.append(QString::number(uZipSize));
     ////log(nl);

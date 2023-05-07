@@ -8,6 +8,10 @@ int main(int argc, char *argv[])
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     QGuiApplication app(argc, argv);
+    app.setApplicationName("Zooland");
+    app.setOrganizationName("Unikode.org");
+    app.setOrganizationDomain("http://zool.loca.lt");
+    app.setApplicationVersion("1");
 
     qmlRegisterType<UK>("unik.Unik", 1, 0, "Unik");
 
@@ -22,9 +26,23 @@ int main(int argc, char *argv[])
     QDir::setCurrent(ufd);
 
     //Add properties
+//    QDir mypath(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
+//    //QDir::setCurrent(mypath.currentPath());
+//    if(!mypath.cd("zooland2"))
+//    {
+//        if(mypath.mkpath("zooland"))
+//            qDebug() << "path created";
+//        else
+//            qDebug() << "path not created";
+//    }
+//    else
+//    {
+//        qDebug() << "inside dir";
+//    }
+
     QByteArray dp="";
-    dp.append(u.getPath(3));
-    engine.rootContext()->setContextProperty("documentPath", dp);
+    dp.append(u.getPath(4));
+    engine.rootContext()->setContextProperty("documentsPath", dp);
 
     QByteArray cd="";
     cd.append(QDir::currentPath());
@@ -47,10 +65,11 @@ int main(int argc, char *argv[])
     }
     //updated = u.downloadGit("https://github.com/nextsigner/zooland-release", cd);
     //updated = u.downloadZipFile("http://zool.loca.lt/files/zooland-main.zip", cd);
-    updated = u.downloadGit("http://zool.loca.lt/files/zooland-main.zip",dp, false);
+    //updated = u.downloadGit("http://zool.loca.lt/files/zooland-main.zip",dp, false);
 #else
     //updated = u.downloadZipFile("http://zool.loca.lt/files/zooland-main.zip",cd);
     //updated = u.downloadGit("http://zool.loca.lt/files/zooland-main.zip",cd, false);
+    updated = true;//u.downloadGit("http://zool.loca.lt/files/zooland-main.zip",dp, false);
 #endif
 
     //QString s;
@@ -58,23 +77,32 @@ int main(int argc, char *argv[])
     //qDebug()<<s;
     //Add import path for folder./modules
     QByteArray modulesPath="";
-    modulesPath.append(QDir::currentPath());
+    modulesPath.append(u.getPath(4));
     QByteArray mainLocation="";
     mainLocation.append(QDir::currentPath());
 #ifdef Q_OS_ANDROID
+    mainLocation="";
+    mainLocation.append(u.getPath(4));
     mainLocation.append("/mainZooland.qml");
 #else
     mainLocation="";
     mainLocation.append("/home/ns/nsp/zooland-release");
-    mainLocation.append("/mainZooland.qml");
+    mainLocation.append("/main.qml");
+
+    //mainLocation="";
+    //mainLocation.append("qrc:main.qml");
 #endif
     modulesPath.append("/modules");
     engine.addImportPath(modulesPath);
 
+    engine.rootContext()->setContextProperty("modulesPath", modulesPath);
     engine.rootContext()->setContextProperty("updated", updated);
-    engine.rootContext()->setContextProperty("folderIsWritable", folderIsWritable);
-    engine.rootContext()->setContextProperty("dato1FileData", dato1FileData);
+    //engine.rootContext()->setContextProperty("folderIsWritable", folderIsWritable);
+    //engine.rootContext()->setContextProperty("dato1FileData", dato1FileData);
 
+
+    engine.rootContext()->setContextProperty("engine", &engine);
+    engine.rootContext()->setContextProperty("mainZoolandPath", mainLocation);
     //const QUrl url(mainLocation);
     const QUrl url(QStringLiteral("qrc:main.qml"));
 
@@ -86,14 +114,16 @@ int main(int argc, char *argv[])
     //engine.load(url);
 #ifdef Q_OS_ANDROID
     if(updated){
-        engine.load(mainLocation);
+        //engine.load(mainLocation);
+        engine.load(url);
     }else{
         engine.load(url);
     }
 #else
     QDir::setCurrent("/home/ns/nsp/zooland-release/");
     engine.addImportPath("/home/ns/nsp/zooland-release/modules");
-    const QUrl url2(QStringLiteral("file:///home/ns/nsp/zooland-release/mainZooland.qml"));
+    //const QUrl url2(QStringLiteral("file:///home/ns/nsp/zooland-release/mainZooland.qml"));
+    const QUrl url2("qrc:main.qml");
     engine.load(url2);
 #endif
 

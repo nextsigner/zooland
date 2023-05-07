@@ -3,6 +3,7 @@
 
 #include <QObject>
 //#include <QCoreApplication>
+#include <QQmlApplicationEngine>
 #include <QGuiApplication>
 #include <QScreen>
 #include <QQmlApplicationEngine>
@@ -124,6 +125,7 @@ public:
     explicit UK(QObject *parent = nullptr);
     ~UK();
     QGuiApplication *app;
+    QQmlApplicationEngine engine;
     QWebSocketServer *_server;
     WebSocketClientWrapper *_clientWrapper;
     QWebChannel *_channel;
@@ -246,8 +248,9 @@ public:
     Q_INVOKABLE QString host();
 
     QQmlApplicationEngine *_engine;
-    void setEngine(QQmlApplicationEngine *e){
+    Q_INVOKABLE void setEngine(QQmlApplicationEngine *e){
         _engine = e;
+        QObject::connect(_engine, SIGNAL(warnings(QList<QQmlError>)), this, SLOT(errorQML(QList<QQmlError>)));
         //connect(_engine, SIGNAL(quit()), this, SLOT(engineQuited()));
     }
     Q_INVOKABLE void clearComponentCache(){
@@ -421,7 +424,8 @@ public slots:
     bool setFile(QByteArray fileName, QByteArray fileData, QByteArray codec);
     QString getFile(QByteArray n);
     bool folderExist(const QByteArray folder);
-    bool mkdir(const QString path);
+    QList<QString> getFileList(QByteArray folder);
+    bool mkdir(const QString path, bool absolute);
     QList<QString> getFolderFileList(const QByteArray folder);
     QString getUpkTempPath();
     QString getUpksLocalPath();
