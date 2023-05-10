@@ -150,7 +150,10 @@ int main(int argc, char *argv[])
         mainLocation="";
         mainLocation.append("/home/ns/nsp/zooland-release");
         mainLocation.append("/main.qml");
-        mainLocation="qrc:main.qml";
+
+        //Descomentar para probar el qrc:main.qml mientras se programa en GNU/Linux.
+        //mainLocation="qrc:main.qml";
+
         const QUrl url3(mainLocation);
         engine.load(url3);
     }else{
