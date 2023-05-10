@@ -1,10 +1,11 @@
 import QtQuick 2.12
-import QtQuick.Window 2.0
+import QtQuick.Window 2.2
 import QtQuick.Controls 2.5
 import QtMultimedia 5.12
 import QtQuick.Dialogs 1.2
 import unik.Unik 1.0
 import Qt.labs.settings 1.1
+//import QtWebEngine 1.8
 import "qrc:Funcs.js" as JS
 ApplicationWindow {
     id: app
@@ -12,7 +13,8 @@ ApplicationWindow {
     width: Qt.platform.os==='android'?640:Screen.width
     height: Qt.platform.os==='android'?400:Screen.height
     title: "Zooland"
-    color: 'black'
+    color: 'red'
+    property bool dev: false
     property int fs: app.width*0.03
     property string uZoolandVersion: ''
     Settings{
@@ -26,11 +28,15 @@ ApplicationWindow {
         onUkStdChanged: {
             let std=ukStd
             std=std.replace(/&quot;/g, '"')
-            if(std.indexOf('download git ')<0 && std.indexOf("Git Zip not downloaded.")<0){
+            if(std.indexOf('download git ')<0 && std.indexOf("Git Zip not downloaded.")<0 && std.indexOf("Local Folder:")<0){
                 app.log(std)
             }else if(std.indexOf("Git Zip not downloaded.")>=0){
                 app.log('Error al descargar el paquete Zooland.')
                 app.log('Fallo al intentar descargar el paquete '+apps.uZoolandZipAvailable)
+            }else if(std.indexOf("Local Folder:")>=0){
+                app.log('El paquete ya se ha descomprimido.')
+                app.log('Ahora puedes presionar la tecla hacia abajo para cargar la aplicación.')
+                //pb.value=0
             }else{
                 let m0=std.split('%')
                 let p=parseInt(m0[1])
@@ -38,11 +44,11 @@ ApplicationWindow {
                 if(p>=100){
                     let v=apps.uZoolandZipAvailable.split('_v')[1].replace('.zip', '')
                     apps.uZoolandNumberVersionDownloaded=v
-                    app.log('Aplicación Actualizada')
+                    //app.log('Aplicación Actualizada')
+                    app.log('Paquete descargado.')
                     app.log('Paquete de Zooland N°'+v)
+                    app.log('Descomprimiendo el paquete...')
                 }
-
-                //ta.text+='['+p+'] '
             }
             flk.contentY=flk.contentHeight-flk.height
         }
@@ -50,13 +56,24 @@ ApplicationWindow {
             unik.setEngine(engine)
         }
     }
-//    Timer{
-//        id: tFail
-//        running: true
-//        repeat: true
-//        interval: 5000
-//        onTriggered: app.w=5
-//    }
+    //    Timer{
+    //        id: tFail
+    //        running: true
+    //        repeat: true
+    //        interval: 5000
+    //        onTriggered: app.w=5
+    //    }
+    Canvas {
+        width: app.width
+        height: app.height
+        anchors.centerIn: parent
+        onPaint: {
+            var ctx = getContext("2d")
+            ctx.fillStyle = "black"
+            ctx.fillRect(0, 0, width, height)
+
+        }
+    }
     Row{
         spacing: app.fs*0.5
         anchors.centerIn: parent
@@ -75,11 +92,12 @@ ApplicationWindow {
                 spacing: app.fs*0.5
                 anchors.centerIn: parent
                 Text{
-                    text: 'CurrentDir: '+currentDir+'\nUpdated: '+updated+'\nmainZoolandPath: '+mainZoolandPath//+' dato1FileData: '+dato1FileData+' dp: '+documentPath
-                    font.pixelSize: Qt.platform.os==='android'?app.fs:app.fs*0.5
+                    text: 'CurrentDir: '+currentDir+'\nUpdated: '+updated+'\nmainZoolandPath: '+mainZoolandPath+' modulesPath: '+modulesPath//+' dp: '+documentPath
+                    font.pixelSize: Qt.platform.os==='android'?app.fs:app.fs*0.35
                     width: xLatIzq.width-app.fs
                     wrapMode: Text.WrapAnywhere
                     color: 'white'
+                    visible: app.dev
                 }
                 Row{
                     spacing: app.fs*0.5
@@ -96,7 +114,7 @@ ApplicationWindow {
                     }
                 }
                 Text{
-                    text: 'Teclas: Arriba=Cargar, Abajo=Actualizar, Izquierda=Salir'
+                    text: 'Teclas: Arriba=Cargar, Abajo=Actualizar, Derecha=Modo Desarrollador, Izquierda=Salir'
                     font.pixelSize: Qt.platform.os==='android'?app.fs:app.fs
                     width: xLatIzq.width-app.fs
                     wrapMode: Text.WrapAnywhere
@@ -202,12 +220,16 @@ ApplicationWindow {
         sequence: 'Left'
         onActivated: Qt.quit()
     }
-//    Connections {
-//        target: engine
-//        function onWarnings(errors) {
-//            ta.text+='Errors: '+errors.toString()
-//        }
-//    }
+    Shortcut{
+        sequence: 'Right'
+        onActivated: app.dev=!app.dev
+    }
+    //    Connections {
+    //        target: engine
+    //        function onWarnings(errors) {
+    //            ta.text+='Errors: '+errors.toString()
+    //        }
+    //    }
     Timer{
         id: tCheckNewVersion
         running: true
@@ -255,35 +277,40 @@ ApplicationWindow {
         }
 
         //        let f=documentsPath+'/zooland'
-//        if(!unik.folderExist(f)){
-//            log('Error! La carpeta '+f+' no existe!')
-//            let bmkd=unik.mkdir(f, true)
-//            log('bmkd '+bmkd)
-//            if(unik.folderExist(f)){
-//                log('La carpeta '+f+' fue creada ahora mismo.')
-//            }else{
-//                log('Error! La carpeta '+f+' no se puede crear.')
-//            }
-//        }
+        //        if(!unik.folderExist(f)){
+        //            log('Error! La carpeta '+f+' no existe!')
+        //            let bmkd=unik.mkdir(f, true)
+        //            log('bmkd '+bmkd)
+        //            if(unik.folderExist(f)){
+        //                log('La carpeta '+f+' fue creada ahora mismo.')
+        //            }else{
+        //                log('Error! La carpeta '+f+' no se puede crear.')
+        //            }
+        //        }
 
         //engine.addImportPath(documentsPath+'/zooland_pn'+v+'/modules')
         engine.load(mainLocation)
         //engine.load(mainLocation)
-//        if(Qt.platform.os==='android'){
-//            //engine.load('file://'+mainZoolandPath)
-//            engine.load(documentsPath+'zooland-n')
-//        }else{
-//            engine.load(mainZoolandPath)
-//        }
+        //        if(Qt.platform.os==='android'){
+        //            //engine.load('file://'+mainZoolandPath)
+        //            engine.load(documentsPath+'zooland-n')
+        //        }else{
+        //            engine.load(mainZoolandPath)
+        //        }
 
     }
     function updateApp(){
-        if(!botUpdate.enabled){
+        if(!botUpdate.enabled && !app.dev){
             log('No es necesario actualizar. La aplicación ya está actualizada con el paquete N°'+apps.uZoolandNumberVersionDownloaded)
             return
         }
         tCheckNewVersion.stop()
-        log('Actualizando aplicación...')
+        if(app.dev){
+            log('Actualizando forzada de la aplicación...')
+        }else{
+            log('Actualizando aplicación...')
+        }
+
         let v=apps.uZoolandZipAvailable.split('_v')[1].replace('.zip', '')
         //let f=documentsPath+'/zooland'
         let f=unik.getPath(4)

@@ -1327,25 +1327,25 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
             QString nfn3 = nfn2.replace(" ", "%20");
 
             if(nfn3.at(nfn3.size()-1)!="/"){
+//                QByteArray ukStdString="";
+//                ukStdString.append("Destino de archivo: ");
+//                ukStdString.append(nfn3);
+//                setUkStd(ukStdString);
+//                qInfo()<<ukStdString;
                 QByteArray ukStdString="";
                 ukStdString.append("Destino de archivo: ");
                 ukStdString.append(nfn3);
-                setUkStd(ukStdString);
-                qInfo()<<ukStdString;
-                QByteArray ukStdString="";
-                ukStdString.append("Destino de archivo: ");
-                ukStdString.append(nfn3);
-                setUkStd(ukStdString);
-                qInfo()<<ukStdString;
+                //setUkStd(ukStdString);
+                //qInfo()<<ukStdString;
                 QByteArray lfd="";
                 lfd.append("Destino de archivo: ");
                 lfd.append(nfn3);
                 lfd.append("\n");
-                QByteArray ukStdString="";
+                ukStdString="";
                 ukStdString.append("Destino de archivo: ");
-                ukStdString.append(nfn3);
-                setUkStd(ukStdString);
-                qInfo()<<ukStdString;
+                ukStdString.append(lfd);
+                //setUkStd(ukStdString);
+                //qInfo()<<ukStdString;
                 logFile.append(lfd);
                 QFile nfile(nfn3);
                 if(!nfile.open(QIODevice::WriteOnly)){
