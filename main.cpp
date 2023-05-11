@@ -145,14 +145,15 @@ int main(int argc, char *argv[])
     //const QUrl url2(QStringLiteral("file:///home/ns/nsp/zooland-release/mainZooland.qml"));
     bool fromZoolandRelease=true;
     if(fromZoolandRelease){
-        QDir::setCurrent(("/home/ns/nsp/zooland-release"));
+        QByteArray carpetaDev="zrp1";
+        QDir::setCurrent(("/home/ns/nsp/"+carpetaDev));
         engine.addImportPath(QDir::currentPath()+"/modules");
         mainLocation="";
-        mainLocation.append("/home/ns/nsp/zooland-release");
+        mainLocation.append("/home/ns/nsp/"+carpetaDev);
         mainLocation.append("/main.qml");
 
         //Descomentar para probar el qrc:main.qml mientras se programa en GNU/Linux.
-        //mainLocation="qrc:main.qml";
+        mainLocation="qrc:main.qml";
 
         const QUrl url3(mainLocation);
         engine.load(url3);

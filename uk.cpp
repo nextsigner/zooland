@@ -1044,7 +1044,7 @@ bool UK::loadUpk(QString upkLocation, bool closeAppLauncher, QString user, QStri
 
 
 bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
-    setUkStd("downloadGit()...");
+    setUkStd("Descargando paquete...");
     QString u;
     u.append(url);
     QStringList mUrl0=u.split("/");
@@ -1107,8 +1107,8 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
 
     qInfo("Android downloadGit()... temp zip location "+tempFile);
     qInfo()<<"Android downloadGit()... Url Zip Git: "<<urlZipGit;
-    setUkStd("Android downloadGit()... temp zip location "+tempFile);
-    setUkStd("Android downloadGit()... Url Zip Git: "+urlZipGit);
+    setUkStd("Descargando paquete comprimido en "+tempFile);
+    setUkStd("Desde la URL de Zool-Server: "+urlZipGit);
 
 
 

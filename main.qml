@@ -5,6 +5,7 @@ import QtMultimedia 5.12
 import QtQuick.Dialogs 1.2
 import unik.Unik 1.0
 import Qt.labs.settings 1.1
+import QtQuick.Shapes 1.12
 //import QtWebEngine 1.8
 import "qrc:Funcs.js" as JS
 ApplicationWindow {
@@ -48,6 +49,8 @@ ApplicationWindow {
                     app.log('Paquete descargado.')
                     app.log('Paquete de Zooland N°'+v)
                     app.log('Descomprimiendo el paquete...')
+                    app.log('Por favor espere.')
+                    tPbToZero.restart()
                 }
             }
             flk.contentY=flk.contentHeight-flk.height
@@ -63,6 +66,13 @@ ApplicationWindow {
     //        interval: 5000
     //        onTriggered: app.w=5
     //    }
+    Timer{
+        id: tPbToZero
+        running: false
+        repeat: false
+        interval: 15000
+        onTriggered: pb.value=0
+    }
     Canvas {
         width: app.width
         height: app.height
@@ -74,58 +84,58 @@ ApplicationWindow {
 
         }
     }
-    Row{
-        spacing: app.fs*0.5
-        anchors.centerIn: parent
-        Rectangle{
-            id: xLatIzq
-            width: app.width*0.35-parent.spacing
-            height:app.height
-            color: 'black'
-            MouseArea{
-                anchors.fill: parent
-                onClicked: {
-                    loadApp()
+    Column{
+        Row{
+            spacing: app.fs*0.5
+            anchors.horizontalCenter: parent.horizontalCenter
+            Rectangle{
+                id: xLatIzq
+                width: app.width*0.35-parent.spacing
+                height:app.height-colBottom.height
+                color: 'black'
+                MouseArea{
+                    anchors.fill: parent
+                    onClicked: {
+                        loadApp()
+                    }
                 }
-            }
-            Column{
-                spacing: app.fs*0.5
-                anchors.centerIn: parent
-                Text{
-                    text: 'CurrentDir: '+currentDir+'\nUpdated: '+updated+'\nmainZoolandPath: '+mainZoolandPath+' modulesPath: '+modulesPath//+' dp: '+documentPath
-                    font.pixelSize: Qt.platform.os==='android'?app.fs:app.fs*0.35
-                    width: xLatIzq.width-app.fs
-                    wrapMode: Text.WrapAnywhere
-                    color: 'white'
-                    visible: app.dev
-                }
-                Row{
+                Column{
                     spacing: app.fs*0.5
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    Button{
-                        id: botUpdate
-                        text: 'Actualizar'
-                        opacity: enabled?1.0:0.5
-                        onClicked: updateApp()
+                    anchors.centerIn: parent
+                    Text{
+                        text: 'CurrentDir: '+currentDir+'\nUpdated: '+updated+'\nmainZoolandPath: '+mainZoolandPath+' modulesPath: '+modulesPath//+' dp: '+documentPath
+                        font.pixelSize: Qt.platform.os==='android'?app.fs:app.fs*0.35
+                        width: xLatIzq.width-app.fs
+                        wrapMode: Text.WrapAnywhere
+                        color: 'white'
+                        visible: app.dev
                     }
-                    Button{
-                        text: 'Cargar'
-                        onClicked: loadApp()
+                    Row{
+                        spacing: app.fs*0.5
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        Button{
+                            id: botUpdate
+                            text: 'Actualizar'
+                            opacity: enabled?1.0:0.5
+                            onClicked: updateApp()
+                        }
+                        Button{
+                            text: 'Cargar'
+                            onClicked: loadApp()
+                        }
                     }
-                }
-                Text{
-                    text: 'Teclas: Arriba=Cargar, Abajo=Actualizar, Derecha=Modo Desarrollador, Izquierda=Salir'
-                    font.pixelSize: Qt.platform.os==='android'?app.fs:app.fs
-                    width: xLatIzq.width-app.fs
-                    wrapMode: Text.WrapAnywhere
-                    color: 'white'
+                    Text{
+                        text: 'Teclas:\nArriba=Cargar\nAbajo=Actualizar\nDerecha=Modo Desarrollador\nIzquierda=Salir'
+                        font.pixelSize: Qt.platform.os==='android'?app.fs*0.5:app.fs*0.5
+                        width: xLatIzq.width-app.fs
+                        wrapMode: Text.WrapAnywhere
+                        color: 'white'
+                    }
                 }
             }
-        }
-        Column{
             Rectangle{
                 width: app.width*0.65
-                height:app.height-pb.height
+                height:app.height-colBottom.height
                 color: 'black'
                 border.width: 1
                 border.color: 'white'
@@ -150,12 +160,18 @@ ApplicationWindow {
                     }
                 }
             }
+        }
+        Column{
+            id: colBottom
+            anchors.horizontalCenter: parent.horizontalCenter
             ProgressBar {
                 id: pb
-                width: app.width*0.65
+                width: app.width-app.fs
                 height: app.fs
                 from:0
                 to:100
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: value>=1
                 Rectangle{
                     id: xTxtPorc
                     width: txtPorc.contentWidth
@@ -306,7 +322,7 @@ ApplicationWindow {
         }
         tCheckNewVersion.stop()
         if(app.dev){
-            log('Actualizando forzada de la aplicación...')
+            log('Actualizando de manera forzada de la aplicación...')
         }else{
             log('Actualizando aplicación...')
         }
