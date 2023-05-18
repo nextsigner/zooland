@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
         mainLocation.append("/main.qml");
 
         //Descomentar para probar el qrc:main.qml mientras se programa en GNU/Linux.
-        mainLocation="qrc:main.qml";
+        //mainLocation="qrc:main.qml";
 
         const QUrl url3(mainLocation);
         engine.load(url3);

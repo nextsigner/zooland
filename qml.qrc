@@ -6,5 +6,6 @@
         <file>main.qml</file>
         <file>qtquickcontrols2.conf</file>
         <file>Funcs.js</file>
+        <file>Mando.qml</file>
     </qresource>
 </RCC>

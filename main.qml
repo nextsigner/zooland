@@ -6,8 +6,8 @@ import QtQuick.Dialogs 1.2
 import unik.Unik 1.0
 import Qt.labs.settings 1.1
 import QtQuick.Shapes 1.12
-//import QtWebEngine 1.8
 import "qrc:Funcs.js" as JS
+import "qrc:"
 ApplicationWindow {
     id: app
     visible: true
@@ -36,7 +36,7 @@ ApplicationWindow {
                 app.log('Fallo al intentar descargar el paquete '+apps.uZoolandZipAvailable)
             }else if(std.indexOf("Local Folder:")>=0){
                 app.log('El paquete ya se ha descomprimido.')
-                app.log('Ahora puedes presionar la tecla hacia abajo para cargar la aplicación.')
+                app.log('Ahora puedes lanzar la aplicación.')
                 //pb.value=0
             }else{
                 let m0=std.split('%')
@@ -85,57 +85,31 @@ ApplicationWindow {
         }
     }
     Column{
-        Row{
-            spacing: app.fs*0.5
+        spacing: app.fs*0.5
+        anchors.bottom: parent.bottom
+        ListView{
+            id: lv
+            width: app.width
+            height: app.fs
+            spacing: app.fs*0.1
             anchors.horizontalCenter: parent.horizontalCenter
-            Rectangle{
-                id: xLatIzq
-                width: app.width*0.35-parent.spacing
-                height:app.height-colBottom.height
-                color: 'black'
-                MouseArea{
-                    anchors.fill: parent
-                    onClicked: {
-                        loadApp()
-                    }
-                }
-                Column{
-                    spacing: app.fs*0.5
-                    anchors.centerIn: parent
-                    Text{
-                        text: 'CurrentDir: '+currentDir+'\nUpdated: '+updated+'\nmainZoolandPath: '+mainZoolandPath+' modulesPath: '+modulesPath//+' dp: '+documentPath
-                        font.pixelSize: Qt.platform.os==='android'?app.fs:app.fs*0.35
-                        width: xLatIzq.width-app.fs
-                        wrapMode: Text.WrapAnywhere
-                        color: 'white'
-                        visible: app.dev
-                    }
-                    Row{
-                        spacing: app.fs*0.5
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        Button{
-                            id: botUpdate
-                            text: 'Actualizar'
-                            opacity: enabled?1.0:0.5
-                            onClicked: updateApp()
-                        }
-                        Button{
-                            text: 'Cargar'
-                            onClicked: loadApp()
-                        }
-                    }
-                    Text{
-                        text: 'Teclas:\nArriba=Cargar\nAbajo=Actualizar\nDerecha=Modo Desarrollador\nIzquierda=Salir'
-                        font.pixelSize: Qt.platform.os==='android'?app.fs*0.5:app.fs*0.5
-                        width: xLatIzq.width-app.fs
-                        wrapMode: Text.WrapAnywhere
-                        color: 'white'
+            //clip: true
+            orientation: ListView.Horizontal
+            model: lm
+            delegate: compItemLv
+            ListModel{
+                id: lm
+                function addItem(t,d){
+                    return{
+                        txt:t,
+                        des: d
                     }
                 }
             }
-            Rectangle{
-                width: app.width*0.65
-                height:app.height-colBottom.height
+        }
+        Rectangle{
+                width: app.width
+                height:app.height-colBottom.height-lv.height-app.fs*0.5
                 color: 'black'
                 border.width: 1
                 border.color: 'white'
@@ -160,7 +134,7 @@ ApplicationWindow {
                     }
                 }
             }
-        }
+
         Column{
             id: colBottom
             anchors.horizontalCenter: parent.horizontalCenter
@@ -193,11 +167,54 @@ ApplicationWindow {
             }
         }
     }
+    Mando{id: mando}
+    Component{
+        id: compItemLv
+        Item{
+            id: xItem
+            width: txtItem.contentWidth+app.fs*0.5
+            height: app.fs*0.8
+            anchors.verticalCenter: parent.verticalCenter
+            property bool selected: index===lv.currentIndex
+            onSelectedChanged: {
+                log('\n'+des)
+            }
+            MouseArea{
+                anchors.fill: parent
+                onClicked: {
+                    lv.currentIndex=index
+                    runEnter()
+                }
+            }
+            Rectangle{
+                anchors.fill: parent
+                radius: app.fs*0.25
+                opacity: xItem.selected?1.0:0.5
+            }
+            Text{
+                id: txtItem
+                text: txt
+                font.pixelSize: app.fs*0.65
+                anchors.centerIn: parent
+            }
+        }
+
+    }
     QtObject{
         id: setUZoolandVersion
         function setData(data, isData){
             if(isData){
                 let j=JSON.parse(data)
+                if(!j.data){
+                    apps.uZoolandZipAvailable='zooland-main.zip'
+                    if(apps.uZoolandNumberVersionDownloaded>=0){
+                        log('Su última versión de paquete instalada es la N°'+apps.uZoolandNumberVersionDownloaded)
+                    }else{
+                        log('Al parecer aún no ha instalado ningún paquete de la aplicación.')
+                    }
+                    log('El servidor de momento tiene disponible el paquete '+apps.uZoolandZipAvailable)
+                    return
+                }
                 apps.uZoolandZipAvailable=j.data
 
                 let v=j.data.split('_v')[1].replace('.zip', '')
@@ -206,57 +223,134 @@ ApplicationWindow {
                 log('Última versión disponible en el servidor: Paquete Zooland N°'+v)
                 if(parseInt(apps.uZoolandNumberVersionDownloaded)!==parseInt(v)){
                     log('Esta versión de Zooland no está actualizada')
-                    botUpdate.enabled=true
+                    //botUpdate.enabled=true
                 }else{
                     log('Esta versión de Zooland está actualizada.')
-                    botUpdate.enabled=false
+                    //botUpdate.enabled=false
                 }
                 log('Versión local N°: '+apps.uZoolandNumberVersionDownloaded)
                 log('Versión remota: N° '+v)
             }else{
-                console.log('Data '+isData+': '+data)
-                ta.text+='Error en setUZoolandVersion!\n'
+                log('El servidor Zool Server no está encendido.')
+                log('Para más información selecciona la opción Ayuda.')
             }
         }
     }
 
+
     Shortcut{
         sequence: 'Down'
         onActivated: {
-            updateApp()
+            runToDown()
         }
     }
     Shortcut{
         sequence: 'Up'
         onActivated: {
-            loadApp()
+            runToUp()
         }
     }
     Shortcut{
         sequence: 'Left'
-        onActivated: Qt.quit()
+        onActivated: {
+            runToLeft()
+        }
     }
     Shortcut{
         sequence: 'Right'
-        onActivated: app.dev=!app.dev
+        onActivated: {
+            runToRight()
+        }
     }
-    //    Connections {
-    //        target: engine
-    //        function onWarnings(errors) {
-    //            ta.text+='Errors: '+errors.toString()
-    //        }
-    //    }
-    Timer{
-        id: tCheckNewVersion
-        running: true
-        repeat: true
-        interval: 15000
-        onTriggered: {
-            checkNewVersion()
+    Shortcut{
+        sequence: 'Enter'
+        onActivated: {
+            runEnter()
+        }
+    }
+    Shortcut{
+        sequence: 'Return'
+        onActivated: {
+            runEnter()
         }
     }
     Component.onCompleted: {
+        lm.append(lm.addItem('Lanzar App', 'Presione Enter para lanzar la aplicación.'))
+        lm.append(lm.addItem('Actualizar', 'Presione Enter para actualizar el paquete.'))
+        lm.append(lm.addItem('¿Hay un nuevo Paquete?', 'Presione Enter para comprobar si hay un nuevo paquete de esta aplicación.'))
+        lm.append(lm.addItem('Modo Desarrollador', 'Presione Enter para ver detalles técnicos y activar otras funciones.'))
+        lm.append(lm.addItem('Ayuda', 'Presione Enter para ver la ayuda.'))
+        lm.append(lm.addItem('Salir', 'Presione Enter para cerrar esta aplicación.'))
+        lv.currentIndex=-1
         checkNewVersion()
+    }
+    function runEnter(){
+        if(lv.currentIndex===0){
+            //Cargar
+            loadApp()
+            return
+        }
+        if(lv.currentIndex===1){
+            //Actualizar
+            updateApp()
+            return
+        }
+        if(lv.currentIndex===2){
+            //Chequear si hay nueva version
+            checkNewVersion()
+            return
+        }
+        if(lv.currentIndex===3){
+            //Modo Dev
+            app.dev=!app.dev
+            if(app.dev){
+                log('\nEl Modo Desarrollador ha sido activado.')
+                let t= '\nCurrentDir: '+currentDir+'\nUpdated: '+updated+'\nmainZoolandPath: '+mainZoolandPath+' modulesPath: '+modulesPath
+                log(t)
+                log('\nAhora si desea forzar la actualización de la aplicación, presione el mando hacia abajo.')
+                if(apps.uZoolandNumberVersionDownloaded<0){
+                    apps.uZoolandZipAvailable='zooland-main.zip'
+                }
+                log('\nSi el servidor Zool Server se encuentra encendido, la actualización forzada se realizará desde el paquete '+apps.uZoolandZipAvailable)
+            }else{
+                log('El Modo Desarrollador ha sido desactivado.')
+
+            }
+        }
+        if(lv.currentIndex===4){
+            //Ayuda
+            let strAyuda=''
+            strAyuda+='Si el servidor se encuentra apagado, necesitas ayuda o soporte sobre esta aplicación, puedes recibir ayuda mediante las siguientes vías de contacto.'+'\n';
+            strAyuda+='Whatsapp: +549 11 3802 4370.'+'\n';
+            strAyuda+='E-Mail: nextsigner@gmail.com.'+'\n';
+            strAyuda+='Twitch: https://twitch.tv/RicardoMartinPizarro'+'\n';
+            strAyuda+='Instagram: @RicardoMartinPizarro'+'\n';
+            log(strAyuda)
+        }
+        if(lv.currentIndex===lm.count-1){
+            //Salir
+            Qt.quit()
+        }
+    }
+    function runToLeft(){
+        if(lv.currentIndex>0){
+            lv.currentIndex--
+        }
+    }
+    function runToRight(){
+        if(lv.currentIndex<lm.count-1){
+            lv.currentIndex++
+        }
+    }
+    function runToDown(){
+        if(flk.contentY<flk.contentHeight-flk.height){
+            flk.contentY=flk.contentY+app.fs*0.5
+        }
+    }
+    function runToUp(){
+        if(flk.contentY>0){
+            flk.contentY=flk.contentY-app.fs*0.5
+        }
     }
     function log(t){
         ta.text+=t+'\n'
@@ -316,18 +410,18 @@ ApplicationWindow {
 
     }
     function updateApp(){
-        if(!botUpdate.enabled && !app.dev){
-            log('No es necesario actualizar. La aplicación ya está actualizada con el paquete N°'+apps.uZoolandNumberVersionDownloaded)
-            return
-        }
-        tCheckNewVersion.stop()
         if(app.dev){
             log('Actualizando de manera forzada de la aplicación...')
         }else{
             log('Actualizando aplicación...')
         }
 
-        let v=apps.uZoolandZipAvailable.split('_v')[1].replace('.zip', '')
+        let m0=apps.uZoolandZipAvailable.split('_v')
+        let v=''
+        if(apps.uZoolandZipAvailable!=='zooland-main.zip' && apps.uZoolandNumberVersionDownloaded >= 0){
+            v=m0[1].replace('.zip', '')
+        }
+
         //let f=documentsPath+'/zooland'
         let f=unik.getPath(4)
         if(!unik.folderExist(f)){
