@@ -1,23 +1,26 @@
-contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
-    ANDROID_EXTRA_LIBS += \
-        $$PWD/android_openssl-5.12.4_5.13.0/arm/libcrypto.so \
-        $$PWD/android_openssl-5.12.4_5.13.0/arm/libssl.so
-}
+!contains(QT.network_private.enabled_features, openssl-linked) {
+    CONFIG(release, debug|release): SSL_PATH = $$PWD/android_openssl
+                              else: SSL_PATH = $$PWD/no-asm
 
-contains(ANDROID_TARGET_ARCH,arm64-v8a) {
-    ANDROID_EXTRA_LIBS += \
-        $$PWD/android_openssl-5.12.4_5.13.0/arm64/libcrypto.so \
-        $$PWD/android_openssl-5.12.4_5.13.0/arm64/libssl.so
-}
-
-contains(ANDROID_TARGET_ARCH,x86) {
-    ANDROID_EXTRA_LIBS += \
-        $$PWD/android_openssl-5.12.4_5.13.0/x86/libcrypto.so \
-        $$PWD/android_openssl-5.12.4_5.13.0/x86/libssl.so
-}
-
-contains(ANDROID_TARGET_ARCH,x86_64) {
-    ANDROID_EXTRA_LIBS += \
-        $$PWD/android_openssl-5.12.4_5.13.0/x86_64/libcrypto.so \
-        $$PWD/android_openssl-5.12.4_5.13.0/x86_64/libssl.so
+    if (versionAtLeast(QT_VERSION, 6.5.0)) {
+        ANDROID_EXTRA_LIBS += \
+            $$SSL_PATH/ssl_3/arm64-v8a/libcrypto_3.so \
+            $$SSL_PATH/ssl_3/arm64-v8a/libssl_3.so \
+            $$SSL_PATH/ssl_3/armeabi-v7a/libcrypto_3.so \
+            $$SSL_PATH/ssl_3/armeabi-v7a/libssl_3.so \
+            $$SSL_PATH/ssl_3/x86/libcrypto_3.so \
+            $$SSL_PATH/ssl_3/x86/libssl_3.so \
+            $$SSL_PATH/ssl_3/x86_64/libcrypto_3.so \
+            $$SSL_PATH/ssl_3/x86_64/libssl_3.so
+    } else {
+        ANDROID_EXTRA_LIBS += \
+            $$SSL_PATH/ssl_1.1/arm64-v8a/libcrypto_1_1.so \
+            $$SSL_PATH/ssl_1.1/arm64-v8a/libssl_1_1.so \
+            $$SSL_PATH/ssl_1.1/armeabi-v7a/libcrypto_1_1.so \
+            $$SSL_PATH/ssl_1.1/armeabi-v7a/libssl_1_1.so \
+            $$SSL_PATH/ssl_1.1/x86/libcrypto_1_1.so \
+            $$SSL_PATH/ssl_1.1/x86/libssl_1_1.so \
+            $$SSL_PATH/ssl_1.1/x86_64/libcrypto_1_1.so \
+            $$SSL_PATH/ssl_1.1/x86_64/libssl_1_1.so
+    }
 }

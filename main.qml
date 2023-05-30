@@ -108,32 +108,33 @@ ApplicationWindow {
             }
         }
         Rectangle{
-                width: app.width
-                height:app.height-colBottom.height-lv.height-app.fs*0.5
-                color: 'black'
-                border.width: 1
-                border.color: 'white'
-                Flickable{
-                    id: flk
-                    anchors.fill: parent
-                    contentWidth: parent.width
-                    contentHeight: ta.contentHeight+app.fs*3
-                    clip: true
-                    ScrollBar.vertical: ScrollBar {
-                        parent: flk.parent
-                        anchors.top: flk.top
-                        anchors.left: flk.right
-                        anchors.bottom: flk.bottom
-                    }
-                    TextArea{
-                        id: ta
-                        width: parent.width
-                        wrapMode: TextArea.WordWrap
-                        color: 'white'
-                        font.pixelSize: app.fs
-                    }
+            width: app.width
+            height:app.height-colBottom.height-lv.height-app.fs
+            color: 'black'
+            border.width: 1
+            border.color: 'white'
+            Flickable{
+                id: flk
+                anchors.fill: parent
+                contentWidth: parent.width
+                contentHeight: ta.contentHeight+app.fs*3
+                clip: true
+                ScrollBar.vertical: ScrollBar {
+                    parent: flk.parent
+                    anchors.top: flk.top
+                    anchors.left: flk.right
+                    anchors.bottom: flk.bottom
+                }
+                TextArea{
+                    id: ta
+                    width: parent.width
+                    wrapMode: TextArea.WordWrap
+                    color: 'white'
+                    font.pixelSize: app.fs
                 }
             }
+            HostEditor{id: hostEditor; visible: false}
+        }
 
         Column{
             id: colBottom
@@ -231,11 +232,15 @@ ApplicationWindow {
                 log('Versión local N°: '+apps.uZoolandNumberVersionDownloaded)
                 log('Versión remota: N° '+v)
             }else{
-                log('El servidor Zool Server no está encendido.')
+                let fp=unik.getPath(4)+'/host'
+                let h=unik.getFile(fp)//.replace(/ /g, '').replace(/\n/g, '')
+                log('\nEl servidor Zool Server con url '+h+' no está encendido.')
+                log('Pruebe cambiando la configuración del servidor.')
                 log('Para más información selecciona la opción Ayuda.')
             }
         }
     }
+
 
 
     Shortcut{
@@ -275,16 +280,32 @@ ApplicationWindow {
         }
     }
     Component.onCompleted: {
-        lm.append(lm.addItem('Lanzar App', 'Presione Enter para lanzar la aplicación.'))
-        lm.append(lm.addItem('Actualizar', 'Presione Enter para actualizar el paquete.'))
-        lm.append(lm.addItem('¿Hay un nuevo Paquete?', 'Presione Enter para comprobar si hay un nuevo paquete de esta aplicación.'))
-        lm.append(lm.addItem('Modo Desarrollador', 'Presione Enter para ver detalles técnicos y activar otras funciones.'))
+        let h=unik.getFile(unik.getPath(4)+'/host').replace(/ /g, '').replace(/\n/g, '')
+        log('Servidor: '+h+'\n')
+        let vfp=unik.getPath(4)+'/version'
+        if(unik.fileExist(unik.getPath(4)+'/main.qml') && unik.fileExist(vfp) && unik.folderExist(unik.getPath(4)+'/modules')){
+            let v=unik.getFile(vfp).replace(/ /g, '').replace(/\n/g, '')
+            log('Versión instalada: '+v+'')
+        }else{
+
+        }
+        lm.append(lm.addItem('Lanzar', 'Presione Enter para lanzar la aplicación.'))
+        lm.append(lm.addItem('Act. desde Servidor', 'Presione Enter para actualizar el paquete desde el servidor.'))
+        lm.append(lm.addItem('Act. desde GitHub', 'Presione Enter para actualizar el paquete desde GitHub.com o GitLab.'))
+        lm.append(lm.addItem('Novedades', 'Presione Enter para comprobar si hay un nuevo paquete de esta aplicación.'))
+        lm.append(lm.addItem('Urls', 'Presione Enter editar la url del servidor.'))
+        //lm.append(lm.addItem('Modo Desarrollador', 'Presione Enter para ver detalles técnicos y activar otras funciones.'))
+        lm.append(lm.addItem('Limpiar', 'Presione Enter para eliminar archivos descargados anteriormente.'))
         lm.append(lm.addItem('Ayuda', 'Presione Enter para ver la ayuda.'))
         lm.append(lm.addItem('Salir', 'Presione Enter para cerrar esta aplicación.'))
-        lv.currentIndex=-1
+        lv.currentIndex=0
+
+        //log('')
         checkNewVersion()
     }
     function runEnter(){
+        var fp
+        var h
         if(lv.currentIndex===0){
             //Cargar
             loadApp()
@@ -292,35 +313,67 @@ ApplicationWindow {
         }
         if(lv.currentIndex===1){
             //Actualizar
-            updateApp()
+            updateApp(1)
             return
         }
         if(lv.currentIndex===2){
+            //Actualizar desde GitHub
+            updateApp(2)
+            return
+        }
+        if(lv.currentIndex===3){
             //Chequear si hay nueva version
             checkNewVersion()
             return
         }
-        if(lv.currentIndex===3){
-            //Modo Dev
-            app.dev=!app.dev
-            if(app.dev){
-                log('\nEl Modo Desarrollador ha sido activado.')
-                let t= '\nCurrentDir: '+currentDir+'\nUpdated: '+updated+'\nmainZoolandPath: '+mainZoolandPath+' modulesPath: '+modulesPath
-                log(t)
-                log('\nAhora si desea forzar la actualización de la aplicación, presione el mando hacia abajo.')
-                if(apps.uZoolandNumberVersionDownloaded<0){
-                    apps.uZoolandZipAvailable='zooland-main.zip'
-                }
-                log('\nSi el servidor Zool Server se encuentra encendido, la actualización forzada se realizará desde el paquete '+apps.uZoolandZipAvailable)
+        if(lv.currentIndex===4){
+            if(!hostEditor.visible){
+                hostEditor.visible=true
             }else{
-                log('El Modo Desarrollador ha sido desactivado.')
+                hostEditor.enter()
+            }
 
+        }
+//        if(lv.currentIndex===5){
+//            //Modo Dev
+//            app.dev=!app.dev
+//            if(app.dev){
+//                log('\nEl Modo Desarrollador ha sido activado.')
+//                let t= '\nCurrentDir: '+currentDir+'\nUpdated: '+updated+'\nmainZoolandPath: '+mainZoolandPath+' modulesPath: '+modulesPath
+//                log(t)
+//                log('\nAhora si desea forzar la actualización de la aplicación, presione el mando hacia abajo.')
+//                if(apps.uZoolandNumberVersionDownloaded<0){
+//                    apps.uZoolandZipAvailable='zooland-main.zip'
+//                }
+//                fp=unik.getPath(4)+'/host'
+//                h=unik.getFile(fp)//.replace(/ /g, '').replace(/\n/g, '')
+//                log('\nSi el servidor Zool Server con url '+h+' se encuentra encendido, la actualización forzada se realizará desde el paquete '+apps.uZoolandZipAvailable)
+//            }else{
+//                log('El Modo Desarrollador ha sido desactivado.')
+
+//            }
+//        }
+        if(lv.currentIndex===5){
+            let fpHost=unik.getPath(4)+'/host'
+            let hHost=unik.getFile(fpHost).replace(/ /g, '').replace(/\n/g, '')
+            let fpUrl=unik.getPath(4)+'/url'
+            let hUrl=unik.getFile(fpUrl).replace(/ /g, '').replace(/\n/g, '')
+
+            let borrado=unik.clearDir(unik.getPath(4))
+
+            if(borrado){
+                log('Se han eliminado todos los archivos de la carpeta '+unik.getPath(4))
+                unik.setFile(fpHost, hHost)
+                unik.setFile(fpUrl, hUrl)
             }
         }
-        if(lv.currentIndex===4){
+
+        if(lv.currentIndex===6){
             //Ayuda
+            fp=unik.getPath(4)+'/host'
+            h=unik.getFile(fp)//.replace(/ /g, '').replace(/\n/g, '')
             let strAyuda=''
-            strAyuda+='Si el servidor se encuentra apagado, necesitas ayuda o soporte sobre esta aplicación, puedes recibir ayuda mediante las siguientes vías de contacto.'+'\n';
+            strAyuda+='Si el servidor Zool Server con url '+h+' se encuentra apagado, necesitas ayuda o soporte sobre esta aplicación, puedes recibir ayuda mediante las siguientes vías de contacto.'+'\n';
             strAyuda+='Whatsapp: +549 11 3802 4370.'+'\n';
             strAyuda+='E-Mail: nextsigner@gmail.com.'+'\n';
             strAyuda+='Twitch: https://twitch.tv/RicardoMartinPizarro'+'\n';
@@ -343,11 +396,19 @@ ApplicationWindow {
         }
     }
     function runToDown(){
+        if(hostEditor.visible){
+            hostEditor.toDown()
+            return
+        }
         if(flk.contentY<flk.contentHeight-flk.height){
             flk.contentY=flk.contentY+app.fs*0.5
         }
     }
     function runToUp(){
+        if(hostEditor.visible){
+            hostEditor.toUp()
+            return
+        }
         if(flk.contentY>0){
             flk.contentY=flk.contentY-app.fs*0.5
         }
@@ -359,7 +420,9 @@ ApplicationWindow {
     function checkNewVersion(){
         let d=new Date(Date.now())
         let ms=d.getTime()
-        JS.getRD('http://zool.loca.lt/zool/getUZoolandVersion?r='+ms, setUZoolandVersion)
+        let fp=unik.getPath(4)+'/host'
+        let h=unik.getFile(fp).replace(/ /g, '').replace(/\n/g, '')
+        JS.getRD(h+':8100/zool/getUZoolandVersion?r='+ms, setUZoolandVersion)
     }
     function loadApp(){
         log('Existe mainZoolandPath '+mainZoolandPath+'? '+unik.fileExist(mainZoolandPath))
@@ -400,6 +463,14 @@ ApplicationWindow {
 
         //engine.addImportPath(documentsPath+'/zooland_pn'+v+'/modules')
         engine.load(mainLocation)
+
+        /*
+          Esto funcionó en Linux. No lo probé en Chrome OS
+        let mainQmlData=unik.getFile(mainLocation)
+        engine.loadData(mainQmlData, 'file:./')
+        */
+
+
         //engine.load(mainLocation)
         //        if(Qt.platform.os==='android'){
         //            //engine.load('file://'+mainZoolandPath)
@@ -409,34 +480,39 @@ ApplicationWindow {
         //        }
 
     }
-    function updateApp(){
+    function updateApp(num){
         if(app.dev){
             log('Actualizando de manera forzada de la aplicación...')
         }else{
             log('Actualizando aplicación...')
         }
-
-        let m0=apps.uZoolandZipAvailable.split('_v')
-        let v=''
-        if(apps.uZoolandZipAvailable!=='zooland-main.zip' && apps.uZoolandNumberVersionDownloaded >= 0){
-            v=m0[1].replace('.zip', '')
-        }
-
-        //let f=documentsPath+'/zooland'
         let f=unik.getPath(4)
-        if(!unik.folderExist(f)){
-            console.log('fne')
-            unik.mkdir(f, true)
-            if(!unik.folderExist(f)){
-                console.log('2 fne')
-            }else{
-                console.log('2 fe')
+        let fp=''
+        let h=''
+
+        if(num===1){
+            let m0=apps.uZoolandZipAvailable.split('_v')
+            let v=''
+            if(apps.uZoolandZipAvailable!=='zooland-main.zip' && apps.uZoolandNumberVersionDownloaded >= 0){
+                v=m0[1].replace('.zip', '')
             }
-        }else{
-            console.log('fe')
+            f=unik.getPath(4)
+            fp=unik.getPath(4)+'/host'
+            h=unik.getFile(fp).replace(/ /g, '').replace(/\n/g, '')
+            updated = unik.downloadGit(h+":8100/files/"+apps.uZoolandZipAvailable,f, false);
+            return
         }
-        console.log('v: '+v)
-        console.log('f: '+f)
-        updated = unik.downloadGit("http://zool.loca.lt/files/"+apps.uZoolandZipAvailable,f, false);
+        if(num===2){
+            f=unik.getPath(4)
+            fp=unik.getPath(4)+'/url'
+            h=unik.getFile(fp).replace(/ /g, '').replace(/\n/g, '')
+            if(h==='' || h.length<=3){
+                log('La url del código fuente no es válida.')
+                log('Url: '+h)
+                return
+            }
+            updated = unik.downloadGit(h,f, true);
+            return
+        }
     }
 }

@@ -7,5 +7,6 @@
         <file>qtquickcontrols2.conf</file>
         <file>Funcs.js</file>
         <file>Mando.qml</file>
+        <file>HostEditor.qml</file>
     </qresource>
 </RCC>

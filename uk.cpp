@@ -436,8 +436,8 @@ bool UK::runAppFromZip(QByteArray url, QByteArray localFolder)
             nfn.append(carpDestinoFinal);
             nfn.append("/");
             nfn.append(zip.getFileNameList().at(v));
-            QString nfn2 = nfn.replace("-master/", "/");
-            QString nfn3 = nfn2.replace(" ", "%20");
+            QString nfn2 = nfn.replace("-main/", "/");
+            QString nfn3 = nfn2.replace(" ", "%20").replace(module, "");
 
             if(nfn3.at(nfn3.size()-1)!="/"){
                 QByteArray ukStdString="";
@@ -1391,8 +1391,8 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
             nfn.append(carpDestinoFinal);
             nfn.append("/");
             nfn.append(zip.getFileNameList().at(v));
-            QString nfn2 = nfn.replace("-master/", "/");
-            QString nfn3 = nfn2.replace(" ", "%20");
+            QString nfn2 = nfn.replace("-main/", "/");
+            QString nfn3 = nfn2.replace(" ", "%20").replace(module, "");
             QByteArray banfn3;
             banfn3.append(nfn3.at(nfn3.size()-1));
             if(banfn3!="/"){
@@ -2494,6 +2494,21 @@ void UK::deleteFile(QByteArray f)
 {
     QFile arch(f);
     arch.remove();
+}
+
+bool UK::clearDir(const QString path){
+        QDir dir( path );
+        dir.setFilter( QDir::NoDotAndDotDot | QDir::Files );
+        foreach( QString dirItem, dir.entryList() )
+            dir.remove( dirItem );
+
+        dir.setFilter( QDir::NoDotAndDotDot | QDir::Dirs );
+        foreach( QString dirItem, dir.entryList() )
+        {
+            QDir subDir( dir.absoluteFilePath( dirItem ) );
+            subDir.removeRecursively();
+        }
+        return  true;
 }
 
 bool UK::setFile(QByteArray fileName, QByteArray fileData)

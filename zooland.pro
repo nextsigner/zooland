@@ -1,45 +1,25 @@
-#Linux Deploy
-#Deploy Command Line Example
+#Entorno
+#GNU/Linux Ubuntu 20.04
+#Qt5.14.2
+#Android Sdk 26.1.1
+#Android Ndk 21.3.xx
 
-
-#1) Situarse en la carpeta principal. cd ~
-
-#2) Edit default.desktop
-
-#3)  ~/linuxdeployqt-continuous-x86_64.AppImage /home/ns/nsp/zooland/build_zooland_linux/zooland -qmldir=/home/ns/unik -qmake=/home/ns/Qt/5.15.2/gcc_64/bin/qmake -verbose=3
-
-
-#4 optional) Copy full plugins and qml folder for full qtquick support.
-#Copy <QT-INSTALL>/gcc_64/qml and <QT-INSTALL>/gcc_64/plugins folders manualy to the executable folder location.
-#cp -r ~/Qt5.12.3/5.12.3/gcc_64/qml ~/nsp/build_zooland_linux/
-#cp -r ~/Qt5.12.3/5.12.3/gcc_64/plugins ~/nsp/build_zooland_linux/
-
-#Make Unik AppImage (The AppImage version is maked automatically from ./build_linux/default.desktop file)
-#5) ~/linuxdeployqt-continuous-x86_64.AppImage /home/ns/nsp/build_zooland_linux/zooland -qmldir=/home/ns/nsp/zooland -qmake=/home/ns/Qt5.12.3/5.12.3/gcc_64/bin/qmake -verbose=3 -bundle-non-qt-libs -no-plugins -appimage
-
-#Si hay fallas con los drivesr Sqlite o MySql
-#hay que renombrar los archivos
-#cd ~/Qt5.12.3/5.12.3/gcc_64/plugins/sqldrivers
-#mv libqsqlmysql.so libqsqlmysql.so_ignore
-#mv libqsqlpsql.so libqsqlpsql.so_ignore
-
-
-QT += quick
 QT += qml quick sql websockets webchannel svg serialport
 QT += texttospeech
+android:{
+    QT += androidextras
+}
 #PKGCONFIG += openssl
 #QT += webview
-#QT += androidextras
+
 
 CONFIG += c++11
 
-include(openssl.pri)
-#android: include(/home/ns/Android/Sdk/android_openssl/openssl.pri)
-
 android:{
+    include(openssl.pri)
     DESTDIR=$$PWD/..
 }else{
-    DESTDIR=/home/ns/nsp/build_zooland_linux
+    DESTDIR=/home/ns/nsp/build_zooland_linux_5.14.2
 }
 
 
@@ -91,11 +71,25 @@ linux:{
 }
 DISTFILES += \
     android/AndroidManifest.xml \
+    android/AndroidManifest.xml \
+    android/build.gradle \
     android/build.gradle \
     android/gradle/wrapper/gradle-wrapper.jar \
+    android/gradle/wrapper/gradle-wrapper.jar \
+    android/gradle/wrapper/gradle-wrapper.properties \
     android/gradle/wrapper/gradle-wrapper.properties \
     android/gradlew \
+    android/gradlew \
     android/gradlew.bat \
+    android/gradlew.bat \
+    android/res/drawable \
+    android/res/drawable-ldpi \
+    android/res/drawable-mdpi \
+    android/res/drawable-hdpi \
+    android/res/drawable-xhdpi \
+    android/res/drawable-xxhdpi \
+    android/res/drawable-xxxhdpi \
+    android/res/values/libs.xml \
     android/res/values/libs.xml
 
 contains(ANDROID_TARGET_ARCH,arm64-v8a) {
@@ -112,3 +106,5 @@ contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
     $$PWD/android_openssl-5.12.4_5.13.0/arm/libcrypto.so \
     $$PWD/android_openssl-5.12.4_5.13.0/arm/libssl.so
 }
+
+ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android

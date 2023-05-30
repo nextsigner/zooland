@@ -1,6 +1,8 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-
+#ifdef Q_OS_ANDROID
+#include <QtAndroid>
+#endif
 #include "uk.h"
 
 int main(int argc, char *argv[])
@@ -11,11 +13,42 @@ int main(int argc, char *argv[])
     app.setApplicationName("Zooland");
     app.setOrganizationName("Unikode.org");
     app.setOrganizationDomain("http://zool.loca.lt");
-    app.setApplicationVersion("1");
+    app.setApplicationVersion("1.31");
 
     qmlRegisterType<UK>("unik.Unik", 1, 0, "Unik");
 
     QQmlApplicationEngine engine;
+
+    //-->Android Permissions
+#ifdef Q_OS_ANDROID
+    auto  result = QtAndroid::checkPermission(QString("android.permission.CAMERA"));
+    if(result == QtAndroid::PermissionResult::Denied){
+        QtAndroid::PermissionResultMap resultHash = QtAndroid::requestPermissionsSync(QStringList({"android.permission.CAMERA"}));
+        if(resultHash["android.permission.CAMERA"] == QtAndroid::PermissionResult::Denied)
+            return 0;
+    }
+    auto  result2 = QtAndroid::checkPermission(QString("android.permission.WRITE_EXTERNAL_STORAGE"));
+    if(result2 == QtAndroid::PermissionResult::Denied){
+        QtAndroid::PermissionResultMap resultHash = QtAndroid::requestPermissionsSync(QStringList({"android.permission.WRITE_EXTERNAL_STORAGE"}));
+        if(resultHash["android.permission.WRITE_EXTERNAL_STORAGE"] == QtAndroid::PermissionResult::Denied)
+            return 0;
+    }
+    auto  result3 = QtAndroid::checkPermission(QString("android.permission.READ_EXTERNAL_STORAGE"));
+    if(result3 == QtAndroid::PermissionResult::Denied){
+        QtAndroid::PermissionResultMap resultHash = QtAndroid::requestPermissionsSync(QStringList({"android.permission.READ_EXTERNAL_STORAGE"}));
+        if(resultHash["android.permission.READ_EXTERNAL_STORAGE"] == QtAndroid::PermissionResult::Denied)
+            return 0;
+    }
+    auto  result4 = QtAndroid::checkPermission(QString("android.permission.INTERNET"));
+    if(result4 == QtAndroid::PermissionResult::Denied){
+        QtAndroid::PermissionResultMap resultHash = QtAndroid::requestPermissionsSync(QStringList({"android.permission.INTERNET"}));
+        if(resultHash["android.permission.INTERNET"] == QtAndroid::PermissionResult::Denied)
+            return 0;
+    }else {
+        qInfo()<<"Este dispositivo tiene permiso para INTERNET.";
+    }
+#endif
+    //<--Android Permissions
 
 
     UK u;
@@ -25,6 +58,14 @@ int main(int argc, char *argv[])
     //ufd.append("/zooland");
     //QDir::setCurrent(ufd);
     QDir::setCurrent(u.getPath(4));
+
+    QByteArray host="http://zool.loca.lt";
+    QByteArray fileHost="";
+    fileHost.append(u.getPath(4));
+    fileHost.append("/host");
+    if(!u.fileExist(fileHost)){
+        u.setFile(fileHost, host);
+    }
 
     //Add properties
 //    QDir mypath(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
@@ -145,7 +186,7 @@ int main(int argc, char *argv[])
     //const QUrl url2(QStringLiteral("file:///home/ns/nsp/zooland-release/mainZooland.qml"));
     bool fromZoolandRelease=true;
     if(fromZoolandRelease){
-        QByteArray carpetaDev="zrp1";
+        QByteArray carpetaDev="zooland-release";
         QDir::setCurrent(("/home/ns/nsp/"+carpetaDev));
         engine.addImportPath(QDir::currentPath()+"/modules");
         mainLocation="";
@@ -153,7 +194,7 @@ int main(int argc, char *argv[])
         mainLocation.append("/main.qml");
 
         //Descomentar para probar el qrc:main.qml mientras se programa en GNU/Linux.
-        //mainLocation="qrc:main.qml";
+        mainLocation="qrc:main.qml";
 
         const QUrl url3(mainLocation);
         engine.load(url3);

@@ -420,6 +420,7 @@ public slots:
     QString currentFolderPath();
     QString currentFolderName();
     void deleteFile(QByteArray f);
+    bool clearDir(const QString path);
     bool setFile(QByteArray fileName, QByteArray fileData);
     bool setFile(QByteArray fileName, QByteArray fileData, QByteArray codec);
     QString getFile(QByteArray n);
