@@ -425,7 +425,8 @@ public slots:
     bool setFile(QByteArray fileName, QByteArray fileData, QByteArray codec);
     QString getFile(QByteArray n);
     bool folderExist(const QByteArray folder);
-    QList<QString> getFileList(QByteArray folder);
+    QList<QString> getFileList(QByteArray folder, const QStringList filters, const bool listFolders);
+    bool isFolder(const QByteArray path);
     bool mkdir(const QString path, bool absolute);
     QList<QString> getFolderFileList(const QByteArray folder);
     QString getUpkTempPath();

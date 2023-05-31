@@ -6,15 +6,18 @@ import QtQuick.Dialogs 1.2
 import unik.Unik 1.0
 import Qt.labs.settings 1.1
 import QtQuick.Shapes 1.12
+import QtWebChannel 1.0
+import QtWebSockets 1.1
 import "qrc:Funcs.js" as JS
 import "qrc:"
+
 ApplicationWindow {
     id: app
     visible: true
     width: Qt.platform.os==='android'?640:Screen.width
     height: Qt.platform.os==='android'?400:Screen.height
     title: "Zooland"
-    color: 'red'
+    color: 'black'
     property bool dev: false
     property int fs: app.width*0.03
     property string uZoolandVersion: ''
@@ -59,13 +62,16 @@ ApplicationWindow {
             unik.setEngine(engine)
         }
     }
-    //    Timer{
-    //        id: tFail
-    //        running: true
-    //        repeat: true
-    //        interval: 5000
-    //        onTriggered: app.w=5
-    //    }
+    Timer{
+        id: tLogTip
+        running: true
+        repeat: false
+        interval: 1500
+        property string text: '?'
+        onTriggered: {
+            log(text)
+        }
+    }
     Timer{
         id: tPbToZero
         running: false
@@ -178,7 +184,8 @@ ApplicationWindow {
             anchors.verticalCenter: parent.verticalCenter
             property bool selected: index===lv.currentIndex
             onSelectedChanged: {
-                log('\n'+des)
+                tLogTip.restart()
+                tLogTip.text='\n'+des
             }
             MouseArea{
                 anchors.fill: parent
@@ -280,6 +287,7 @@ ApplicationWindow {
         }
     }
     Component.onCompleted: {
+        app.requestActivate()
         let h=unik.getFile(unik.getPath(4)+'/host').replace(/ /g, '').replace(/\n/g, '')
         log('Servidor: '+h+'\n')
         let vfp=unik.getPath(4)+'/version'
@@ -289,6 +297,11 @@ ApplicationWindow {
         }else{
 
         }
+        updateMenu()
+        checkNewVersion()
+    }
+    function updateMenu(){
+        lm.clear()
         lm.append(lm.addItem('Lanzar', 'Presione Enter para lanzar la aplicación.'))
         lm.append(lm.addItem('Act. desde Servidor', 'Presione Enter para actualizar el paquete desde el servidor.'))
         lm.append(lm.addItem('Act. desde GitHub', 'Presione Enter para actualizar el paquete desde GitHub.com o GitLab.'))
@@ -297,13 +310,18 @@ ApplicationWindow {
         //lm.append(lm.addItem('Modo Desarrollador', 'Presione Enter para ver detalles técnicos y activar otras funciones.'))
         lm.append(lm.addItem('Limpiar', 'Presione Enter para eliminar archivos descargados anteriormente.'))
         lm.append(lm.addItem('Ayuda', 'Presione Enter para ver la ayuda.'))
+        if(app.dev){
+            lm.append(lm.addItem('Listar carpeta', 'Presione Enter para listar los archivos descargados de la aplicación.'))
+            //lm.append(lm.addItem('Boton Dev 1', 'd1'))
+            //lm.append(lm.addItem('Boton Dev 2', 'd2'))
+            //lm.append(lm.addItem('Boton Dev 3', 'd3'))
+            //lm.append(lm.addItem('Boton Dev 4', 'd4'))
+        }
         lm.append(lm.addItem('Salir', 'Presione Enter para cerrar esta aplicación.'))
         lv.currentIndex=0
-
-        //log('')
-        checkNewVersion()
     }
     function runEnter(){
+        tLogTip.stop()
         var fp
         var h
         if(lv.currentIndex===0){
@@ -380,14 +398,89 @@ ApplicationWindow {
             strAyuda+='Instagram: @RicardoMartinPizarro'+'\n';
             log(strAyuda)
         }
+
+        //DEV Listar archivos
+        if(lv.currentIndex===7){
+            let folderForList=unik.getPath(4)
+            let fileList=unik.getFileList(folderForList, ['*.qml'], false)
+            log('\nLista de archivos.\nCarpeta: '+folderForList)
+            if(fileList.length===0){
+                log('No hay ningún archivos del tipo QML en esta carpeta: '+folderForList)
+            }else{
+                log('\nLista de archivos QML.\n')
+                log(fileList.toString().split(',').join('\n'))
+            }
+            let folderList=unik.getFileList(folderForList, [], true)
+            if(folderList.length===0){
+                log('No hay ningún archivos del tipo carpeta en esta carpeta: '+folderForList)
+            }else{
+                log('\nLista de subcarpetas.')
+                for(var i=0;i<folderList.length;i++){
+                    //log(folderList.toString().split(',').join('\n'))
+                    let c=folderList[i]
+                    if(c==='.' || c==='..')continue
+                    let subFolder=folderForList+'/'+c
+                    let isFolder=unik.isFolder(subFolder)
+                    //log('SubCarpeta '+subFolder+' isFolder: '+isFolder)
+                    if(!isFolder){
+                        fileList=unik.getFileList(subFolder, ['*.qml'], false)
+                        if(fileList.length>0){
+                            log('\nSub carpeta '+subFolder+':')
+                            log(fileList.toString().split(',').join('\n'))
+                        }
+                    }else{
+                        //let subFolder2=subFolder+'/'+
+                        let subFolderList=unik.getFileList(subFolder, [], true)
+                        //log('\nIterando carpeta '+subFolder+':')
+                        if(subFolderList.length>0){
+                            //log('\nSub carpeta '+subFolder+':')
+                            //log(subFolderList.toString().split(',').join('\n'))
+                            for(var i2=0;i2<subFolderList.length;i2++){
+                                let c2=subFolderList[i]
+                                if(c2==='.' || c2==='..')continue
+                                let subFolder2=subFolder+'/'+c2
+                                let fileList2=unik.getFileList(subFolder2, ['*.qml', '*'], false)
+                                if(fileList2.length>0){
+                                    log('\nSub carpeta nivel 2'+subFolder2+':')
+                                    log(fileList2
+                                        .toString().split(',').join('\n'))
+                                }
+                            }
+                        }
+                    }
+
+                }
+
+            }
+
+
+
+            //log(fileList)
+        }
+
         if(lv.currentIndex===lm.count-1){
             //Salir
             Qt.quit()
         }
     }
+    property int cantReqDev: 0
+    onDevChanged: {
+        updateMenu()
+    }
     function runToLeft(){
         if(lv.currentIndex>0){
             lv.currentIndex--
+        }else{
+            if(app.cantReqDev<3){
+                app.cantReqDev++
+            }else{
+                cantReqDev=0
+            }
+            if(app.cantReqDev===3){
+                app.dev=true
+            }else{
+                app.dev=false
+            }
         }
     }
     function runToRight(){

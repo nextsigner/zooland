@@ -1323,8 +1323,9 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
             nfn.append(carpDestinoFinal);
             nfn.append("/");
             nfn.append(zip.getFileNameList().at(v));
-            QString nfn2 = nfn.replace("-master/", "/");
-            QString nfn3 = nfn2.replace(" ", "%20");
+            QString nfn2 = nfn.replace("-main/", "/");
+            //QString nfn3 = nfn2.replace(" ", "%20");
+            QString nfn3 = nfn2.replace(" ", "%20").replace(module, "");
 
             if(nfn3.at(nfn3.size()-1)!="/"){
 //                QByteArray ukStdString="";
@@ -1391,7 +1392,7 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
             nfn.append(carpDestinoFinal);
             nfn.append("/");
             nfn.append(zip.getFileNameList().at(v));
-            QString nfn2 = nfn.replace("-main/", "/");
+            QString nfn2 = nfn.replace("-main/", "");
             QString nfn3 = nfn2.replace(" ", "%20").replace(module, "");
             QByteArray banfn3;
             banfn3.append(nfn3.at(nfn3.size()-1));
@@ -2548,18 +2549,29 @@ bool UK::folderExist(const QByteArray folder)
     return  QDir(folder.constData()).exists();
 }
 
-QList<QString> UK::getFileList(QByteArray folder)
+QList<QString> UK::getFileList(QByteArray folder, const QStringList filters, const bool listFolders)
 {
     QList<QString> list;
 
     //QDir directory("/media/ns/WD/vnRicardo");
     QDir directory(folder);
-    QStringList images = directory.entryList(QStringList() << "*.mp4" << "*.mkv",QDir::Files);
+    //QStringList images = directory.entryList(QStringList() << "*.mp4" << "*.mkv",QDir::Files);
+    QStringList images;
+    if(!listFolders){
+        images = directory.entryList(filters,QDir::Files);
+    }else{
+        images = directory.entryList(filters,QDir::Dirs);
+    }
     foreach(QString filename, images) {
     //do whatever you need to do
         list.append(filename);
     }
     return list;
+}
+
+bool UK::isFolder(const QByteArray path){
+    QFileInfo fi(path);
+    return fi.exists() && fi.isDir();
 }
 
 bool UK::mkdir(const QString path, bool absolute)
