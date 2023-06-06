@@ -26,6 +26,10 @@ ApplicationWindow {
         fileName: unik.getPath(4)+'/zoolandMain.cfg'
         property int uZoolandNumberVersionDownloaded: -1
         property string uZoolandZipAvailable: ''
+        property bool cleanAuto: false
+        property bool updateGitAuto: false
+        property bool engineLoadData: true
+        property bool autoLoad: false
     }
     Unik{
         id: unik
@@ -40,6 +44,11 @@ ApplicationWindow {
             }else if(std.indexOf("Local Folder:")>=0){
                 app.log('El paquete ya se ha descomprimido.')
                 app.log('Ahora puedes lanzar la aplicación.')
+                lv.currentIndex=0
+                if(apps.autoLoad){
+                    log('Iniciando carga automática del código fuente.')
+                    loadApp()
+                }
                 //pb.value=0
             }else{
                 let m0=std.split('%')
@@ -60,6 +69,30 @@ ApplicationWindow {
         }
         Component.onCompleted: {
             unik.setEngine(engine)
+        }
+    }
+    Timer{
+        id: tAutoUpdateGit
+        running: apps.updateGitAuto
+        repeat: false
+        interval: 3000
+        onTriggered: {
+            updateApp(2)
+        }
+    }
+    Timer{
+        id: tAutoLoad
+        running: apps.autoLoad && !apps.updateGitAuto
+        repeat: true
+        interval: 1000
+        property int v: 0
+        onTriggered: {
+            if(v===3){
+                loadApp()
+                stop()
+            }else{
+                v++
+            }
         }
     }
     Timer{
@@ -299,6 +332,7 @@ ApplicationWindow {
         }
         updateMenu()
         checkNewVersion()
+        if(apps.cleanAuto)clearDir()
     }
     function updateMenu(){
         lm.clear()
@@ -312,10 +346,10 @@ ApplicationWindow {
         lm.append(lm.addItem('Ayuda', 'Presione Enter para ver la ayuda.'))
         if(app.dev){
             lm.append(lm.addItem('Listar carpeta', 'Presione Enter para listar los archivos descargados de la aplicación.'))
-            //lm.append(lm.addItem('Boton Dev 1', 'd1'))
-            //lm.append(lm.addItem('Boton Dev 2', 'd2'))
-            //lm.append(lm.addItem('Boton Dev 3', 'd3'))
-            //lm.append(lm.addItem('Boton Dev 4', 'd4'))
+            lm.append(lm.addItem('Auto Update Git', 'Presionar Enter para que esta aplicación se acutalice automáticamente desde el repositorio Git cada vez que se inicia.'))
+            lm.append(lm.addItem('Auto Limpiar', 'd2'))
+            lm.append(lm.addItem('Engine Load', 'Presionar Enter para definir si el código fuente se carga en la ventana actual de aplicación o en una nueva.'))
+            lm.append(lm.addItem('Auto Carga', 'Presione Enter para cambiar el modo automático de carga del código fuente.'))
         }
         lm.append(lm.addItem('Salir', 'Presione Enter para cerrar esta aplicación.'))
         lv.currentIndex=0
@@ -372,18 +406,7 @@ ApplicationWindow {
 //            }
 //        }
         if(lv.currentIndex===5){
-            let fpHost=unik.getPath(4)+'/host'
-            let hHost=unik.getFile(fpHost).replace(/ /g, '').replace(/\n/g, '')
-            let fpUrl=unik.getPath(4)+'/url'
-            let hUrl=unik.getFile(fpUrl).replace(/ /g, '').replace(/\n/g, '')
-
-            let borrado=unik.clearDir(unik.getPath(4))
-
-            if(borrado){
-                log('Se han eliminado todos los archivos de la carpeta '+unik.getPath(4))
-                unik.setFile(fpHost, hHost)
-                unik.setFile(fpUrl, hUrl)
-            }
+            clearDir()
         }
 
         if(lv.currentIndex===6){
@@ -458,6 +481,104 @@ ApplicationWindow {
             //log(fileList)
         }
 
+        //SET BOOL AUTO UPDATE GIT
+        if(lv.currentIndex===8){
+            apps.updateGitAuto=!apps.updateGitAuto
+            if(apps.updateGitAuto){
+                log('Se ha seteado esta aplicación para que se actualice automáticamente cada vez que se encienda.')
+            }else{
+                log('Se ha desactivado la función de auto actualización.')
+            }
+        }
+        //DEV Listar archivos
+        if(lv.currentIndex===7){
+            let folderForList=unik.getPath(4)
+            let fileList=unik.getFileList(folderForList, ['*.qml'], false)
+            log('\nLista de archivos.\nCarpeta: '+folderForList)
+            if(fileList.length===0){
+                log('No hay ningún archivos del tipo QML en esta carpeta: '+folderForList)
+            }else{
+                log('\nLista de archivos QML.\n')
+                log(fileList.toString().split(',').join('\n'))
+            }
+            let folderList=unik.getFileList(folderForList, [], true)
+            if(folderList.length===0){
+                log('No hay ningún archivos del tipo carpeta en esta carpeta: '+folderForList)
+            }else{
+                log('\nLista de subcarpetas.')
+                for(var i=0;i<folderList.length;i++){
+                    //log(folderList.toString().split(',').join('\n'))
+                    let c=folderList[i]
+                    if(c==='.' || c==='..')continue
+                    let subFolder=folderForList+'/'+c
+                    let isFolder=unik.isFolder(subFolder)
+                    //log('SubCarpeta '+subFolder+' isFolder: '+isFolder)
+                    if(!isFolder){
+                        fileList=unik.getFileList(subFolder, ['*.qml'], false)
+                        if(fileList.length>0){
+                            log('\nSub carpeta '+subFolder+':')
+                            log(fileList.toString().split(',').join('\n'))
+                        }
+                    }else{
+                        //let subFolder2=subFolder+'/'+
+                        let subFolderList=unik.getFileList(subFolder, [], true)
+                        //log('\nIterando carpeta '+subFolder+':')
+                        if(subFolderList.length>0){
+                            //log('\nSub carpeta '+subFolder+':')
+                            //log(subFolderList.toString().split(',').join('\n'))
+                            for(var i2=0;i2<subFolderList.length;i2++){
+                                let c2=subFolderList[i]
+                                if(c2==='.' || c2==='..')continue
+                                let subFolder2=subFolder+'/'+c2
+                                let fileList2=unik.getFileList(subFolder2, ['*.qml', '*'], false)
+                                if(fileList2.length>0){
+                                    log('\nSub carpeta nivel 2'+subFolder2+':')
+                                    log(fileList2
+                                        .toString().split(',').join('\n'))
+                                }
+                            }
+                        }
+                    }
+
+                }
+
+            }
+
+
+
+            //log(fileList)
+        }
+
+        //SET BOOL AUTO CLEAR DIR
+        if(lv.currentIndex===9){
+            apps.cleanAuto=!apps.cleanAuto
+            if(apps.cleanAuto){
+                log('Se ha seteado esta aplicación para que limpie la carpeta de instalación automáticamente cada vez que se encienda.')
+            }else{
+                log('Se ha desactivado la función de auto borrado de carpeta de instalación.')
+            }
+        }
+
+        //SET BOOL ENGINE LOAD DATA
+        if(lv.currentIndex===10){
+            apps.engineLoadData=!apps.engineLoadData
+            if(apps.engineLoadData){
+                log('A partir de ahora el código fuente de la aplicación se cargará en esta ventana actual reemplazando todo lo que se está viendo y ejecutando en este momento.')
+            }else{
+                log('A partir de ahora el código fuente se cargará en una nueva ventana de aplicación.')
+            }
+        }
+
+        //SET BOOL AUTO LOAD
+        if(lv.currentIndex===11){
+            apps.autoLoad=!apps.autoLoad
+            if(apps.autoLoad){
+                log('A partir de ahora el código fuente de la aplicación se cargará automáticamente.')
+            }else{
+                log('A partir de ahora para cargar el código fuente deberá presionar el botón Lanzar.')
+            }
+        }
+
         if(lv.currentIndex===lm.count-1){
             //Salir
             Qt.quit()
@@ -468,6 +589,10 @@ ApplicationWindow {
         updateMenu()
     }
     function runToLeft(){
+        if(tAutoLoad.running){
+            tAutoLoad.stop()
+            return
+        }
         if(lv.currentIndex>0){
             lv.currentIndex--
         }else{
@@ -518,18 +643,23 @@ ApplicationWindow {
         JS.getRD(h+':8100/zool/getUZoolandVersion?r='+ms, setUZoolandVersion)
     }
     function loadApp(){
-        log('Existe mainZoolandPath '+mainZoolandPath+'? '+unik.fileExist(mainZoolandPath))
-        let m=(''+mainZoolandPath).replace('mainZooland.qml', 'main.qml')
-        log('Existe main.qml '+m+'? '+unik.fileExist(m))
-        if(Qt.platform.os==='android'){
-            log('Existe /sdcard/Documents/mainZooland.qml ?'+unik.fileExist('/sdcard/Documents/mainZooland.qml'))
-            log('Existe /sdcard/Documents/main.qml ?'+unik.fileExist('/sdcard/Documents/main.qml'))
-        }
+//        log('Existe mainZoolandPath '+mainZoolandPath+'? '+unik.fileExist(mainZoolandPath))
+//        let m=(''+mainZoolandPath).replace('mainZooland.qml', 'main.qml')
+//        log('Existe main.qml '+m+'? '+unik.fileExist(m))
+//        if(Qt.platform.os==='android'){
+//            log('Existe /sdcard/Documents/mainZooland.qml ?'+unik.fileExist('/sdcard/Documents/mainZooland.qml'))
+//            log('Existe /sdcard/Documents/main.qml ?'+unik.fileExist('/sdcard/Documents/main.qml'))
+//        }
 
         let v=apps.uZoolandNumberVersionDownloaded
         let mainLocation=''
+
         if(Qt.platform.os==='android'){
             mainLocation=unik.getPath(4)+'/mainZooland.qml'
+            let fd=unik.getFile(unik.getPath(4)+'/main.qml')
+            if(fd!=='error'){
+                unik.setFile(mainLocation, fd)
+            }
         }else{
             mainLocation=unik.getPath(4)+'/mainZooland.qml'
         }
@@ -555,23 +685,12 @@ ApplicationWindow {
         //        }
 
         //engine.addImportPath(documentsPath+'/zooland_pn'+v+'/modules')
-        engine.load(mainLocation)
-
-        /*
-          Esto funcionó en Linux. No lo probé en Chrome OS
-        let mainQmlData=unik.getFile(mainLocation)
-        engine.loadData(mainQmlData, 'file:./')
-        */
-
-
-        //engine.load(mainLocation)
-        //        if(Qt.platform.os==='android'){
-        //            //engine.load('file://'+mainZoolandPath)
-        //            engine.load(documentsPath+'zooland-n')
-        //        }else{
-        //            engine.load(mainZoolandPath)
-        //        }
-
+        if(!apps.engineLoadData){
+            engine.load(mainLocation)
+        }else{
+            let mainQmlData=unik.getFile(mainLocation)
+            engine.loadData(mainQmlData, 'file:./')
+        }
     }
     function updateApp(num){
         if(app.dev){
@@ -604,8 +723,27 @@ ApplicationWindow {
                 log('Url: '+h)
                 return
             }
+            log('Comienza la descarga del código fuente desde '+h)
+            log('Por favor espere.')
+            if(apps.autoLoad){
+                log('El código fuente será cargado y ejecutado automáticamente luego de la descarga.')
+            }
             updated = unik.downloadGit(h,f, true);
             return
+        }
+    }
+    function clearDir(){
+        let fpHost=unik.getPath(4)+'/host'
+        let hHost=unik.getFile(fpHost).replace(/ /g, '').replace(/\n/g, '')
+        let fpUrl=unik.getPath(4)+'/url'
+        let hUrl=unik.getFile(fpUrl).replace(/ /g, '').replace(/\n/g, '')
+
+        let borrado=unik.clearDir(unik.getPath(4))
+
+        if(borrado){
+            log('Se han eliminado todos los archivos de la carpeta '+unik.getPath(4))
+            unik.setFile(fpHost, hHost)
+            unik.setFile(fpUrl, hUrl)
         }
     }
 }

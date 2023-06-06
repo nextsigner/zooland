@@ -2279,7 +2279,14 @@ void UK::downloadProgress(qint64 bytesSend, qint64 bytesTotal)
     d1.append(QString::number(porc));
     QStringList sd1=d1.split(".");
     setPorc(QString(sd1.at(0)).toInt(), 0);*/
-    double porc = (((double)bytesSend)/bytesTotal)*100;
+    //double porc = (((double)bytesSend)/bytesTotal)*100;
+#ifdef Q_OS_ANDROID
+    qint32 bs=qint32(bytesSend);
+    qint32 bt=qint32(bytesTotal);
+    double porc = (((double)bs)/bt)*100;
+#else
+    int porc= (int)((bytesSend * 100) / bytesTotal);
+#endif
     QString d1;
     d1.append(QString::number(porc));
     QStringList sd1=d1.split(".");
