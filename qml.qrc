@@ -8,5 +8,7 @@
         <file>Funcs.js</file>
         <file>Mando.qml</file>
         <file>HostEditor.qml</file>
+        <file>Splash.qml</file>
+        <file>splash.png</file>
     </qresource>
 </RCC>

@@ -82,14 +82,7 @@ DISTFILES += \
     android/gradlew \
     android/gradlew.bat \
     android/gradlew.bat \
-    android/res/drawable \
-    android/res/drawable-ldpi \
-    android/res/drawable-mdpi \
-    android/res/drawable-hdpi \
-    android/res/drawable-xhdpi \
-    android/res/drawable-xxhdpi \
-    android/res/drawable-xxxhdpi \
-    android/res/values/libs.xml \
+    android/res/values/strings.xml \
     android/res/values/libs.xml
 
 contains(ANDROID_TARGET_ARCH,arm64-v8a) {

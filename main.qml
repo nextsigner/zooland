@@ -21,6 +21,9 @@ ApplicationWindow {
     property bool dev: false
     property int fs: app.width*0.03
     property string uZoolandVersion: ''
+    onDevChanged: {
+        updateMenu()
+    }
     Settings{
         id: apps
         fileName: unik.getPath(4)+'/zoolandMain.cfg'
@@ -45,6 +48,15 @@ ApplicationWindow {
                 app.log('El paquete ya se ha descomprimido.')
                 app.log('Ahora puedes lanzar la aplicación.')
                 lv.currentIndex=0
+                let fpAL=unik.getPath(4)+'/autoload'
+                if(unik.fileExist(fpAL)){
+                    let fpALData=unik.getFile(fpAL).replace(/\n/g, '')
+                    if(fpALData==='true'){
+                        apps.autoLoad=true
+                    }else{
+                        apps.autoLoad=false
+                    }
+                }
                 if(apps.autoLoad){
                     log('Iniciando carga automática del código fuente.')
                     loadApp()
@@ -84,7 +96,7 @@ ApplicationWindow {
         id: tAutoLoad
         running: apps.autoLoad && !apps.updateGitAuto
         repeat: true
-        interval: 1000
+        interval: 4000
         property int v: 0
         onTriggered: {
             if(v===3){
@@ -111,17 +123,6 @@ ApplicationWindow {
         repeat: false
         interval: 15000
         onTriggered: pb.value=0
-    }
-    Canvas {
-        width: app.width
-        height: app.height
-        anchors.centerIn: parent
-        onPaint: {
-            var ctx = getContext("2d")
-            ctx.fillStyle = "black"
-            ctx.fillRect(0, 0, width, height)
-
-        }
     }
     Column{
         spacing: app.fs*0.5
@@ -164,12 +165,13 @@ ApplicationWindow {
                     anchors.left: flk.right
                     anchors.bottom: flk.bottom
                 }
-                TextArea{
+                //TextArea{
+                Text{
                     id: ta
                     width: parent.width
                     wrapMode: TextArea.WordWrap
                     color: 'white'
-                    font.pixelSize: app.fs
+                    font.pixelSize: app.fs*0.5
                 }
             }
             HostEditor{id: hostEditor; visible: false}
@@ -241,6 +243,7 @@ ApplicationWindow {
         }
 
     }
+    Splash{id: splash; visible: apps.autoLoad}
     QtObject{
         id: setUZoolandVersion
         function setData(data, isData){
@@ -281,8 +284,6 @@ ApplicationWindow {
         }
     }
 
-
-
     Shortcut{
         sequence: 'Down'
         onActivated: {
@@ -319,6 +320,7 @@ ApplicationWindow {
             runEnter()
         }
     }
+
     Component.onCompleted: {
         app.requestActivate()
         let h=unik.getFile(unik.getPath(4)+'/host').replace(/ /g, '').replace(/\n/g, '')
@@ -585,12 +587,11 @@ ApplicationWindow {
         }
     }
     property int cantReqDev: 0
-    onDevChanged: {
-        updateMenu()
-    }
     function runToLeft(){
+        splash.visible=!splash.visible
         if(tAutoLoad.running){
             tAutoLoad.stop()
+
             return
         }
         if(lv.currentIndex>0){
@@ -650,6 +651,9 @@ ApplicationWindow {
 //            log('Existe /sdcard/Documents/mainZooland.qml ?'+unik.fileExist('/sdcard/Documents/mainZooland.qml'))
 //            log('Existe /sdcard/Documents/main.qml ?'+unik.fileExist('/sdcard/Documents/main.qml'))
 //        }
+
+        splash.enableAn=false
+        splash.t=splash.t+'\nCargando...'
 
         let v=apps.uZoolandNumberVersionDownloaded
         let mainLocation=''
