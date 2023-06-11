@@ -79,7 +79,7 @@ Rectangle{
     }
 
     Text{
-        text: 'Presionar hacia la izquierda\npara ir a opciones'
+        text: 'Presionar hacia abajo\npara ir a opciones'
         color: 'white'
         font.pixelSize: 20
         horizontalAlignment: Text.AlignHCenter

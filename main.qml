@@ -21,6 +21,9 @@ ApplicationWindow {
     property bool dev: false
     property int fs: app.width*0.03
     property string uZoolandVersion: ''
+    property var aUrlsReps: []
+    property int currentUrlRepIndex: 0
+
     onDevChanged: {
         updateMenu()
     }
@@ -123,6 +126,13 @@ ApplicationWindow {
         repeat: false
         interval: 15000
         onTriggered: pb.value=0
+    }
+    Timer{
+        id: tGetUrlsReps
+        running: true
+        repeat: true
+        interval: 15000
+        onTriggered: getUrlsReps()
     }
     Column{
         spacing: app.fs*0.5
@@ -284,6 +294,28 @@ ApplicationWindow {
         }
     }
 
+
+
+    QtObject{
+        id: setUrlsReps
+        function setData(data, isData){
+            if(isData){
+                let m0=data.split('\n')
+                let a=[]
+                for(var i=0;i<m0.length-1;i++){
+                    if(m0[i]!=='')a.push(m0[i])
+                }
+                app.aUrlsReps=a
+
+            }
+        }
+    }
+    function getUrlsReps(){
+        let ms=new Date(Date.now()).getTime()
+        let url="https://raw.githubusercontent.com/nextsigner/nextsigner.github.io/master/zool/zooland-reps?r="+ms
+        JS.getRD(url, setUrlsReps)
+    }
+
     Shortcut{
         sequence: 'Down'
         onActivated: {
@@ -322,6 +354,7 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
+        getUrlsReps()
         app.requestActivate()
         let h=unik.getFile(unik.getPath(4)+'/host').replace(/ /g, '').replace(/\n/g, '')
         log('Servidor: '+h+'\n')
@@ -388,25 +421,25 @@ ApplicationWindow {
             }
 
         }
-//        if(lv.currentIndex===5){
-//            //Modo Dev
-//            app.dev=!app.dev
-//            if(app.dev){
-//                log('\nEl Modo Desarrollador ha sido activado.')
-//                let t= '\nCurrentDir: '+currentDir+'\nUpdated: '+updated+'\nmainZoolandPath: '+mainZoolandPath+' modulesPath: '+modulesPath
-//                log(t)
-//                log('\nAhora si desea forzar la actualización de la aplicación, presione el mando hacia abajo.')
-//                if(apps.uZoolandNumberVersionDownloaded<0){
-//                    apps.uZoolandZipAvailable='zooland-main.zip'
-//                }
-//                fp=unik.getPath(4)+'/host'
-//                h=unik.getFile(fp)//.replace(/ /g, '').replace(/\n/g, '')
-//                log('\nSi el servidor Zool Server con url '+h+' se encuentra encendido, la actualización forzada se realizará desde el paquete '+apps.uZoolandZipAvailable)
-//            }else{
-//                log('El Modo Desarrollador ha sido desactivado.')
+        //        if(lv.currentIndex===5){
+        //            //Modo Dev
+        //            app.dev=!app.dev
+        //            if(app.dev){
+        //                log('\nEl Modo Desarrollador ha sido activado.')
+        //                let t= '\nCurrentDir: '+currentDir+'\nUpdated: '+updated+'\nmainZoolandPath: '+mainZoolandPath+' modulesPath: '+modulesPath
+        //                log(t)
+        //                log('\nAhora si desea forzar la actualización de la aplicación, presione el mando hacia abajo.')
+        //                if(apps.uZoolandNumberVersionDownloaded<0){
+        //                    apps.uZoolandZipAvailable='zooland-main.zip'
+        //                }
+        //                fp=unik.getPath(4)+'/host'
+        //                h=unik.getFile(fp)//.replace(/ /g, '').replace(/\n/g, '')
+        //                log('\nSi el servidor Zool Server con url '+h+' se encuentra encendido, la actualización forzada se realizará desde el paquete '+apps.uZoolandZipAvailable)
+        //            }else{
+        //                log('El Modo Desarrollador ha sido desactivado.')
 
-//            }
-//        }
+        //            }
+        //        }
         if(lv.currentIndex===5){
             clearDir()
         }
@@ -588,7 +621,7 @@ ApplicationWindow {
     }
     property int cantReqDev: 0
     function runToLeft(){
-        splash.visible=!splash.visible
+        //splash.visible=!splash.visible
         if(tAutoLoad.running){
             tAutoLoad.stop()
 
@@ -615,6 +648,24 @@ ApplicationWindow {
         }
     }
     function runToDown(){
+        if(splash.visible){
+            splash.visible=false
+            return
+        }
+        if(lm.get(lv.currentIndex).txt==='Urls' && app.dev){
+            tAutoLoad.stop()
+            tAutoUpdateGit.stop()
+            if(app.currentUrlRepIndex<app.aUrlsReps.length-1){
+                app.currentUrlRepIndex++
+            }else{
+                app.currentUrlRepIndex=0
+            }
+            let fp=unik.getPath(4)+'/url'
+            let h=app.aUrlsReps[app.currentUrlRepIndex].replace(/ /g, '').replace(/\n/g, '')
+            unik.setFile(fp, h)
+            log('Se ha definido la Url de Repositorio para origen del código fuente: '+h)
+            return
+        }
         if(hostEditor.visible){
             hostEditor.toDown()
             return
@@ -624,6 +675,20 @@ ApplicationWindow {
         }
     }
     function runToUp(){
+        if(lm.get(lv.currentIndex).txt==='Urls' && app.dev){
+            tAutoLoad.stop()
+            tAutoUpdateGit.stop()
+            if(app.currentUrlRepIndex<app.aUrlsReps.length-1){
+                app.currentUrlRepIndex++
+            }else{
+                app.currentUrlRepIndex=0
+            }
+            let fp=unik.getPath(4)+'/host'
+            let h=app.aUrlsReps[app.currentUrlRepIndex].replace(/ /g, '').replace(/\n/g, '')
+            unik.setFile(fp, h)
+            log('Se ha definido la Url de Repositorio para Host: '+h)
+            return
+        }
         if(hostEditor.visible){
             hostEditor.toUp()
             return
@@ -644,13 +709,13 @@ ApplicationWindow {
         JS.getRD(h+':8100/zool/getUZoolandVersion?r='+ms, setUZoolandVersion)
     }
     function loadApp(){
-//        log('Existe mainZoolandPath '+mainZoolandPath+'? '+unik.fileExist(mainZoolandPath))
-//        let m=(''+mainZoolandPath).replace('mainZooland.qml', 'main.qml')
-//        log('Existe main.qml '+m+'? '+unik.fileExist(m))
-//        if(Qt.platform.os==='android'){
-//            log('Existe /sdcard/Documents/mainZooland.qml ?'+unik.fileExist('/sdcard/Documents/mainZooland.qml'))
-//            log('Existe /sdcard/Documents/main.qml ?'+unik.fileExist('/sdcard/Documents/main.qml'))
-//        }
+        //        log('Existe mainZoolandPath '+mainZoolandPath+'? '+unik.fileExist(mainZoolandPath))
+        //        let m=(''+mainZoolandPath).replace('mainZooland.qml', 'main.qml')
+        //        log('Existe main.qml '+m+'? '+unik.fileExist(m))
+        //        if(Qt.platform.os==='android'){
+        //            log('Existe /sdcard/Documents/mainZooland.qml ?'+unik.fileExist('/sdcard/Documents/mainZooland.qml'))
+        //            log('Existe /sdcard/Documents/main.qml ?'+unik.fileExist('/sdcard/Documents/main.qml'))
+        //        }
 
         splash.enableAn=false
         splash.t=splash.t+'\nCargando...'
