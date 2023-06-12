@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<manifest package="org.unikode.zooland" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="v1.66" android:versionCode="66" android:installLocation="auto">
+<manifest package="org.unikode.zooland" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="v1.70" android:versionCode="70" android:installLocation="auto">
     <uses-sdk android:minSdkVersion="25" android:targetSdkVersion="29"/>
 
     <!-- The following comment will be replaced upon deployment with default permissions based on the dependencies of the application.

@@ -24,6 +24,10 @@ ApplicationWindow {
     property var aUrlsReps: []
     property int currentUrlRepIndex: 0
 
+    property int uZipCount: 0
+    property int uZipNumberDes: 0
+
+
     onDevChanged: {
         updateMenu()
     }
@@ -34,7 +38,7 @@ ApplicationWindow {
         property string uZoolandZipAvailable: ''
         property bool cleanAuto: false
         property bool updateGitAuto: false
-        property bool engineLoadData: true
+        property bool engineLoadData: false
         property bool autoLoad: false
     }
     Unik{
@@ -42,11 +46,23 @@ ApplicationWindow {
         onUkStdChanged: {
             let std=ukStd
             std=std.replace(/&quot;/g, '"')
-            if(std.indexOf('download git ')<0 && std.indexOf("Git Zip not downloaded.")<0 && std.indexOf("Local Folder:")<0){
+            if(std.indexOf('download git ')<0 && std.indexOf("Git Zip not downloaded.")<0 && std.indexOf("Local Folder:")<0 && std.indexOf("Zip Des:")<0 && std.indexOf("Zip Count:")<0){
                 app.log(std)
             }else if(std.indexOf("Git Zip not downloaded.")>=0){
                 app.log('Error al descargar el paquete Zooland.')
                 app.log('Fallo al intentar descargar el paquete '+apps.uZoolandZipAvailable)
+            }else if(std.indexOf("Zip Count:")>=0){
+                let nzc=std.split(':')[1]
+                app.uZipCount=nzc
+                app.uZipNumberDes=0
+                log('Se van a descomprimir un total de '+app.uZipCount+' archivos.')
+
+            }else if(std.indexOf("Zip Des:")>=0){
+                app.uZipNumberDes++
+                txtTask.text='Descomprimiendo'
+                let porc=100/app.uZipCount*app.uZipNumberDes
+                pb.value=parseInt(porc)
+                //log('N° '+app.uZipNumberDes+' de '+app.uZipCount+': %'+porc)
             }else if(std.indexOf("Local Folder:")>=0){
                 app.log('El paquete ya se ha descomprimido.')
                 app.log('Ahora puedes lanzar la aplicación.')
@@ -66,6 +82,7 @@ ApplicationWindow {
                 }
                 //pb.value=0
             }else{
+                txtTask.text='Descargando'
                 let m0=std.split('%')
                 let p=parseInt(m0[1])
                 pb.value=p
@@ -190,31 +207,49 @@ ApplicationWindow {
         Column{
             id: colBottom
             anchors.horizontalCenter: parent.horizontalCenter
+            visible: pb.visible
+            Rectangle{
+                id: xTxtPorc
+                width: rowPbTxts.width+app.fs*0.5//txtPorc.contentWidth
+                height: app.fs//txtPorc.contentHeight
+                //anchors.centerIn: parent
+                color: 'black'
+                opacity: 0.65
+                border.width: 2
+                border.color: 'white'
+                anchors.horizontalCenter: parent.horizontalCenter
+                //anchors.bottom: parent.top
+                //anchors.bottomMargin: app.fs//*0.1
+                Row{
+                    id: rowPbTxts
+                    spacing: app.fs*0.25
+                    anchors.centerIn: xTxtPorc
+                    Text{
+                        id: txtTask
+                        font.pixelSize: parent.parent.height*0.6
+                        color: 'white'
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                    Text{
+                        id: txtPorc
+                        text: pb.value===0?'':'%'+pb.value
+                        font.pixelSize: parent.parent.height*0.6
+                        color: 'white'
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+            }
             ProgressBar {
                 id: pb
                 width: app.width-app.fs
-                height: app.fs
+                height: app.fs*0.5
                 from:0
                 to:100
                 anchors.horizontalCenter: parent.horizontalCenter
-                visible: value>=1
-                Rectangle{
-                    id: xTxtPorc
-                    width: txtPorc.contentWidth
-                    height: txtPorc.contentHeight
-                    anchors.centerIn: parent
-                    color: 'black'
-                    opacity: 0.65
-                    border.width: 2
-                    border.color: 'white'
+                onValueChanged: {
+                    if(value===0)txtTask.text='Esperando para realizar una tarea.'
                 }
-                Text{
-                    id: txtPorc
-                    text: '%'+pb.value
-                    font.pixelSize: pb.height*0.65
-                    color: 'white'
-                    anchors.centerIn: xTxtPorc
-                }
+                //visible: value>=1
 
             }
         }
@@ -354,8 +389,19 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
+        updateMenu()
+        let autoFilePath=unik.getPath(4)+'/auto'
+        if(unik.fileExist(autoFilePath)){
+            let code=unik.getFile(autoFilePath)
+            let comp = Qt.createQmlObject(code, app, 'autoZoolandCode')
+            return
+        }
+
         getUrlsReps()
         app.requestActivate()
+
+
+
         let h=unik.getFile(unik.getPath(4)+'/host').replace(/ /g, '').replace(/\n/g, '')
         log('Servidor: '+h+'\n')
         let vfp=unik.getPath(4)+'/version'
@@ -365,28 +411,31 @@ ApplicationWindow {
         }else{
 
         }
-        updateMenu()
-        checkNewVersion()
+
+        if(!apps.autoLoad && !apps.updateGitAuto && unik.fileExist(unik.getPath(4)+'/host')){
+            checkNewVersion()
+        }
         if(apps.cleanAuto)clearDir()
     }
     function updateMenu(){
         lm.clear()
         lm.append(lm.addItem('Lanzar', 'Presione Enter para lanzar la aplicación.'))
-        lm.append(lm.addItem('Act. desde Servidor', 'Presione Enter para actualizar el paquete desde el servidor.'))
-        lm.append(lm.addItem('Act. desde GitHub', 'Presione Enter para actualizar el paquete desde GitHub.com o GitLab.'))
+        lm.append(lm.addItem('!GitHub', 'Presione Enter para actualizar el paquete desde GitHub.com o GitLab.'))
+        lm.append(lm.addItem('!Servidor', 'Presione Enter para actualizar el paquete desde el servidor.'))
         lm.append(lm.addItem('Novedades', 'Presione Enter para comprobar si hay un nuevo paquete de esta aplicación.'))
         lm.append(lm.addItem('Urls', 'Presione Enter editar la url del servidor.'))
         //lm.append(lm.addItem('Modo Desarrollador', 'Presione Enter para ver detalles técnicos y activar otras funciones.'))
-        lm.append(lm.addItem('Limpiar', 'Presione Enter para eliminar archivos descargados anteriormente.'))
+
         lm.append(lm.addItem('Ayuda', 'Presione Enter para ver la ayuda.'))
         if(app.dev){
-            lm.append(lm.addItem('Listar carpeta', 'Presione Enter para listar los archivos descargados de la aplicación.'))
+            lm.append(lm.addItem('Limpiar', 'Presione Enter para eliminar archivos descargados anteriormente.'))
+            lm.append(lm.addItem('!Listar', 'Presione Enter para listar los archivos descargados de la aplicación.'))
             lm.append(lm.addItem('Auto Update Git', 'Presionar Enter para que esta aplicación se acutalice automáticamente desde el repositorio Git cada vez que se inicia.'))
             lm.append(lm.addItem('Auto Limpiar', 'd2'))
             lm.append(lm.addItem('Engine Load', 'Presionar Enter para definir si el código fuente se carga en la ventana actual de aplicación o en una nueva.'))
             lm.append(lm.addItem('Auto Carga', 'Presione Enter para cambiar el modo automático de carga del código fuente.'))
         }
-        lm.append(lm.addItem('Salir', 'Presione Enter para cerrar esta aplicación.'))
+        lm.append(lm.addItem('!Salir', 'Presione Enter para cerrar esta aplicación.'))
         lv.currentIndex=0
     }
     function runEnter(){
@@ -398,22 +447,27 @@ ApplicationWindow {
             loadApp()
             return
         }
-        if(lv.currentIndex===1){
+        //if(lv.currentIndex===1){
+        if(lm.get(lv.currentIndex).txt==='!Servidor'){
             //Actualizar
+            tAutoLoad.stop()
+            tAutoUpdateGit.stop()
             updateApp(1)
             return
         }
-        if(lv.currentIndex===2){
+        if(lm.get(lv.currentIndex).txt==='!GitHub'){
             //Actualizar desde GitHub
+            tAutoLoad.stop()
+            tAutoUpdateGit.stop()
             updateApp(2)
             return
         }
-        if(lv.currentIndex===3){
+        if(lm.get(lv.currentIndex).txt==='Novedades'){
             //Chequear si hay nueva version
             checkNewVersion()
             return
         }
-        if(lv.currentIndex===4){
+        if(lm.get(lv.currentIndex).txt==='Urls'){
             if(!hostEditor.visible){
                 hostEditor.visible=true
             }else{
@@ -421,30 +475,10 @@ ApplicationWindow {
             }
 
         }
-        //        if(lv.currentIndex===5){
-        //            //Modo Dev
-        //            app.dev=!app.dev
-        //            if(app.dev){
-        //                log('\nEl Modo Desarrollador ha sido activado.')
-        //                let t= '\nCurrentDir: '+currentDir+'\nUpdated: '+updated+'\nmainZoolandPath: '+mainZoolandPath+' modulesPath: '+modulesPath
-        //                log(t)
-        //                log('\nAhora si desea forzar la actualización de la aplicación, presione el mando hacia abajo.')
-        //                if(apps.uZoolandNumberVersionDownloaded<0){
-        //                    apps.uZoolandZipAvailable='zooland-main.zip'
-        //                }
-        //                fp=unik.getPath(4)+'/host'
-        //                h=unik.getFile(fp)//.replace(/ /g, '').replace(/\n/g, '')
-        //                log('\nSi el servidor Zool Server con url '+h+' se encuentra encendido, la actualización forzada se realizará desde el paquete '+apps.uZoolandZipAvailable)
-        //            }else{
-        //                log('El Modo Desarrollador ha sido desactivado.')
-
-        //            }
-        //        }
-        if(lv.currentIndex===5){
+        if(lm.get(lv.currentIndex).txt==='Limpiar'){
             clearDir()
         }
-
-        if(lv.currentIndex===6){
+        if(lm.get(lv.currentIndex).txt==='Ayuda'){
             //Ayuda
             fp=unik.getPath(4)+'/host'
             h=unik.getFile(fp)//.replace(/ /g, '').replace(/\n/g, '')
@@ -458,7 +492,7 @@ ApplicationWindow {
         }
 
         //DEV Listar archivos
-        if(lv.currentIndex===7){
+        if(lm.get(lv.currentIndex).txt==='!Listar'){
             let folderForList=unik.getPath(4)
             let fileList=unik.getFileList(folderForList, ['*.qml'], false)
             log('\nLista de archivos.\nCarpeta: '+folderForList)
@@ -517,7 +551,7 @@ ApplicationWindow {
         }
 
         //SET BOOL AUTO UPDATE GIT
-        if(lv.currentIndex===8){
+        if(lm.get(lv.currentIndex).txt==='AutoUpdate'){
             apps.updateGitAuto=!apps.updateGitAuto
             if(apps.updateGitAuto){
                 log('Se ha seteado esta aplicación para que se actualice automáticamente cada vez que se encienda.')
@@ -526,7 +560,7 @@ ApplicationWindow {
             }
         }
         //DEV Listar archivos
-        if(lv.currentIndex===7){
+        if(lm.get(lv.currentIndex).txt==='!Listar'){
             let folderForList=unik.getPath(4)
             let fileList=unik.getFileList(folderForList, ['*.qml'], false)
             log('\nLista de archivos.\nCarpeta: '+folderForList)
@@ -585,7 +619,7 @@ ApplicationWindow {
         }
 
         //SET BOOL AUTO CLEAR DIR
-        if(lv.currentIndex===9){
+        if(lm.get(lv.currentIndex).txt==='AutoClear'){
             apps.cleanAuto=!apps.cleanAuto
             if(apps.cleanAuto){
                 log('Se ha seteado esta aplicación para que limpie la carpeta de instalación automáticamente cada vez que se encienda.')
@@ -595,7 +629,7 @@ ApplicationWindow {
         }
 
         //SET BOOL ENGINE LOAD DATA
-        if(lv.currentIndex===10){
+        if(lm.get(lv.currentIndex).txt==='EngineLoad'){
             apps.engineLoadData=!apps.engineLoadData
             if(apps.engineLoadData){
                 log('A partir de ahora el código fuente de la aplicación se cargará en esta ventana actual reemplazando todo lo que se está viendo y ejecutando en este momento.')
@@ -605,7 +639,7 @@ ApplicationWindow {
         }
 
         //SET BOOL AUTO LOAD
-        if(lv.currentIndex===11){
+        if(lm.get(lv.currentIndex).txt==='AutoLoad'){
             apps.autoLoad=!apps.autoLoad
             if(apps.autoLoad){
                 log('A partir de ahora el código fuente de la aplicación se cargará automáticamente.')
@@ -614,7 +648,8 @@ ApplicationWindow {
             }
         }
 
-        if(lv.currentIndex===lm.count-1){
+        //if(lv.currentIndex===lm.count-1){
+        if(lm.get(lv.currentIndex).txt==='!Salir'){
             //Salir
             Qt.quit()
         }

@@ -272,10 +272,20 @@ bool UK::runAppFromZip(QByteArray url, QByteArray localFolder)
 
     QString carpeta="aaa";
     int v=0;
+    int cantFiles=zip.getFileNameList().size();
+    QByteArray std="";
+    std.append("Zip Count:");
+    std.append(QString::number(cantFiles));
+    setUkStd(std);
+    //QThread::sleep(5);
     for(bool f=zip.goToFirstFile(); f; f=zip.goToNextFile()) {
         if(v>=zip.getFileNameList().size()){
             break;
         }
+        std="";
+        std.append("Zip Des:");
+        std.append(QString::number(v));
+        setUkStd(std);
         file.open(QIODevice::ReadOnly);
         //qInfo()<<"Zip filename: "<<zip.getFileNameList();
         if(v==0){
@@ -312,6 +322,7 @@ bool UK::runAppFromZip(QByteArray url, QByteArray localFolder)
         v++;
     }
     zip.close();
+    deleteFile(tempFile);
 #endif
 #ifdef Q_OS_OSX
     QByteArray carpDestinoFinal;
@@ -339,10 +350,20 @@ bool UK::runAppFromZip(QByteArray url, QByteArray localFolder)
 
     QString carpeta="aaa";
     int v=0;
+    int cantFiles=zip.getFileNameList().size();
+    QByteArray std="";
+    std.append("Zip Count:");
+    std.append(QString::number(cantFiles));
+    setUkStd(std);
+    //QThread::sleep(5);
     for(bool f=zip.goToFirstFile(); f; f=zip.goToNextFile()) {
         if(v>=zip.getFileNameList().size()){
             break;
         }
+        std="";
+        std.append("Zip Des:");
+        std.append(QString::number(v));
+        setUkStd(std);
         file.open(QIODevice::ReadOnly);
         //qInfo()<<"Zip filename: "<<zip.getFileNameList();
         if(v==0){
@@ -379,6 +400,7 @@ bool UK::runAppFromZip(QByteArray url, QByteArray localFolder)
         v++;
     }
     zip.close();
+    deleteFile(tempFile);
 #endif
 #ifdef Q_OS_LINUX
     QByteArray carpDestinoFinal;
@@ -422,10 +444,20 @@ bool UK::runAppFromZip(QByteArray url, QByteArray localFolder)
 
     QString carpeta="aaa";
     int v=0;
+    int cantFiles=zip.getFileNameList().count();
+    QByteArray std="";
+    std.append("Zip Count:");
+    std.append(QString::number(cantFiles));
+    setUkStd(std);
+    //QThread::sleep(5);
     for(bool f=zip.goToFirstFile(); f; f=zip.goToNextFile()) {
         if(v>=zip.getFileNameList().size()){
             break;
         }
+        std="";
+        std.append("Zip Des:");
+        std.append(QString::number(v));
+        setUkStd(std);
         file.open(QIODevice::ReadOnly);
         //qInfo()<<"Zip filename: "<<zip.getFileNameList();
         if(v==0){
@@ -462,6 +494,7 @@ bool UK::runAppFromZip(QByteArray url, QByteArray localFolder)
         v++;
     }
     zip.close();
+    deleteFile(tempFile);
 #else
     QuaZip zip(tempFile.constData());
     zip.open(QuaZip::mdUnzip);
@@ -470,10 +503,20 @@ bool UK::runAppFromZip(QByteArray url, QByteArray localFolder)
 
     QString carpeta="aaa";
     int v=0;
+    int cantFiles=zip.getFileNameList().size();
+    QByteArray std="";
+    std.append("Zip Count:");
+    std.append(QString::number(cantFiles));
+    setUkStd(std);
+    //QThread::sleep(5);
     for(bool f=zip.goToFirstFile(); f; f=zip.goToNextFile()) {
         if(v>=zip.getFileNameList().size()){
             break;
         }
+        std="";
+        std.append("Zip Des:");
+        std.append(QString::number(v));
+        setUkStd(std);
         file.open(QIODevice::ReadOnly);
         if(v==0){
             carpeta=QString(zip.getFileNameList().at(0));
@@ -492,6 +535,7 @@ bool UK::runAppFromZip(QByteArray url, QByteArray localFolder)
                 ukStdString.append("Destino de archivo: ");
                 ukStdString.append(nfn3);
                 setUkStd(ukStdString);
+                //QThread::msleep(100);
                 qInfo()<<ukStdString;
                 QFile nfile(nfn3);
                 if(!nfile.open(QIODevice::WriteOnly)){
@@ -502,6 +546,10 @@ bool UK::runAppFromZip(QByteArray url, QByteArray localFolder)
                 }
             }else{
                 qInfo()<<"Destino de carpeta: "<<nfn3;
+                QByteArray ukStdString="";
+                ukStdString.append("Destino de carpeta: ");
+                ukStdString.append(nfn3);
+                setUkStd(ukStd);
                 QDir dnfn(nfn3);
                 dnfn.mkpath(".");
             }
@@ -510,6 +558,7 @@ bool UK::runAppFromZip(QByteArray url, QByteArray localFolder)
         v++;
     }
     zip.close();
+    deleteFile(tempFile);
 #endif
 #ifdef Q_OS_OSX
     QByteArray carpDestinoFinal;
@@ -651,7 +700,7 @@ bool UK::mkUpk(QByteArray folder, QByteArray upkName, QByteArray user, QByteArra
     //QStringList fileList = dir.entryList();
     //qInfo()<<"For reading "<<fileList.count()<<" files...";
     //qInfo()<<"For reading "<<it.<<" files...";
-    //QThread::sleep(5);
+    ////QThread::sleep(5);
     int vf=0;
     //while (it.hasNext()) {
     do {
@@ -1146,10 +1195,20 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
 
     QString carpeta="aaa";
     int v=0;
+    int cantFiles=zip.getFileNameList().size();
+    QByteArray std="";
+    std.append("Zip Count:");
+    std.append(QString::number(cantFiles));
+    setUkStd(std);
+    //QThread::sleep(5);
     for(bool f=zip.goToFirstFile(); f; f=zip.goToNextFile()) {
         if(v>=zip.getFileNameList().size()){
             break;
         }
+        std="";
+        std.append("Zip Des:");
+        std.append(QString::number(v));
+        setUkStd(std);
         file.open(QIODevice::ReadOnly);
         //qInfo()<<"Zip filename: "<<zip.getFileNameList();
         if(v==0){
@@ -1186,6 +1245,7 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
         v++;
     }
     zip.close();
+    deleteFile(tempFile);
 #endif
 #ifdef Q_OS_OSX
     QByteArray carpDestinoFinal;
@@ -1213,11 +1273,20 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
 
     QString carpeta="aaa";
     int v=0;
+    int cantFiles=zip.getFileNameList().size();
+    QByteArray std="";
+    std.append("Zip Count:");
+    std.append(QString::number(cantFiles));
+    setUkStd(std);
+    //QThread::sleep(5);
     for(bool f=zip.goToFirstFile(); f; f=zip.goToNextFile()) {
         if(v>=zip.getFileNameList().size()){
             break;
         }
-        file.open(QIODevice::ReadOnly);
+        std="";
+        std.append("Zip Des:");
+        std.append(QString::number(v));
+        setUkStd(std);    file.open(QIODevice::ReadOnly);
         //qInfo()<<"Zip filename: "<<zip.getFileNameList();
         if(v==0){
             carpeta=QString(zip.getFileNameList().at(0));
@@ -1253,6 +1322,7 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
         v++;
     }
     zip.close();
+    deleteFile(tempFile);
 #endif
 #ifdef Q_OS_LINUX
     QByteArray carpDestinoFinal;
@@ -1309,10 +1379,20 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
 
     QString carpeta="aaa";
     int v=0;
+    int cantFiles=zip.getFileNameList().size();
+    QByteArray std="";
+    std.append("Zip Count:");
+    std.append(QString::number(cantFiles));
+    setUkStd(std);
+    //QThread::sleep(5);
     for(bool f=zip.goToFirstFile(); f; f=zip.goToNextFile()) {
-        if(v>zip.getFileNameList().size()){
+        if(v>=zip.getFileNameList().size()){
             break;
         }
+        std="";
+        std.append("Zip Des:");
+        std.append(QString::number(v));
+        setUkStd(std);
         file.open(QIODevice::ReadOnly);
         //qInfo()<<"Zip filename: "<<zip.getFileNameList();
         if(v==0){
@@ -1370,6 +1450,7 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
         v++;
     }
     zip.close();
+    deleteFile(tempFile);
     setFile(fpLogFile, logFile);
 #else
     QuaZip zip(tempFile.constData());
@@ -1379,10 +1460,21 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
 
     QString carpeta="aaa";
     int v=0;
+    //int cantFiles=zip.getFileNameList().count();
+    int cantFiles=zip.getFileNameList().size();
+    QByteArray std="";
+    std.append("Zip Count:");
+    std.append(QString::number(cantFiles));
+    setUkStd(std);
+    ////QThread::sleep(5);
     for(bool f=zip.goToFirstFile(); f; f=zip.goToNextFile()) {
         if(v>=zip.getFileNameList().size()){
             break;
         }
+        std="";
+        std.append("Zip Des:");
+        std.append(QString::number(v));
+        setUkStd(std);
         file.open(QIODevice::ReadOnly);
         if(v==0){
             carpeta=QString(zip.getFileNameList().at(0));
@@ -1402,6 +1494,7 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
                 ukStdString.append("Destino de archivo: ");
                 ukStdString.append(nfn3);
                 setUkStd(ukStdString);
+                //QThread::msleep(100);
                 qInfo()<<ukStdString;
                 QFile nfile(nfn3);
                 if(!nfile.open(QIODevice::WriteOnly)){
@@ -1412,6 +1505,10 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
                 }
             }else{
                 qInfo()<<"Destino de carpeta: "<<nfn3;
+                QByteArray ukStdString="";
+                ukStdString.append("Destino de carpeta: ");
+                ukStdString.append(nfn3);
+                setUkStd(ukStd);
                 QDir dnfn(nfn3);
                 dnfn.mkpath(".");
             }
@@ -1420,6 +1517,7 @@ bool UK::downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl){
         v++;
     }
     zip.close();
+    deleteFile(tempFile);
 #endif
 #ifdef Q_OS_OSX
     QByteArray carpDestinoFinal;
@@ -2049,14 +2147,18 @@ bool UK::downloadZipFile(QByteArray url, QByteArray ubicacion)
     uZipSize=-1;
     getZipFileSizeForDownload(url);
     qInfo("2 downloading zip file from: "+url);
-    int v=0;
-    while (uZipSize<=0) {
-        //qInfo()<<"uZipSize V: "<<v;
-        if(v>1000){
-            break;
-        }
-        v++;
-    }
+//    int v=0;
+//    while (uZipSize<=0) {
+//        //qInfo()<<"uZipSize V: "<<v;
+//        if(v>1000){
+//            break;
+//        }
+//        v++;
+//    }
+//    QByteArray std="";
+//    std.append("Zip Size:");
+//    std.append(QString::number(uZipSize));
+//    setUkStd(std);
 
 #ifndef Q_OS_OSX
 #ifndef Q_OS_ANDROID
@@ -2128,11 +2230,16 @@ void UK::getZipFileSizeForDownload(QByteArray url)
     qnam = new QNetworkAccessManager(this);
     req.setUrl(QUrl(url.constData()));
     reply2 = qnam->head(req);
+//    QByteArray std="";
+//    std.append("Zip Size Url:");
+//    std.append(url);
+//    setUkStd(std);
     connect(reply2,SIGNAL(finished()),this,SLOT(setUZipFileSize()));
 }
 
 void UK::setUZipFileSize()
 {
+    //uZipSize = reply2->header(QNetworkRequest::ContentLengthHeader).toUInt();
     uZipSize = reply2->header(QNetworkRequest::ContentLengthHeader).toUInt();
     reply2->deleteLater();
     qnam->deleteLater();
@@ -3229,10 +3336,16 @@ QString UK::desCompData(QString d)
 
 void UK::downloadZipProgress(qint64 bytesSend, qint64 bytesTotal)
 {    
+    int zs=0;
+    if(uZipSize>0){
+      zs=uZipSize;
+    }else{
+        zs=reply2->header(QNetworkRequest::ContentLengthHeader).toUInt();
+    }
     double porc;
-    if(bytesTotal!=-1){
-        if(uZipSize>=bytesTotal){
-            porc = (((double)bytesSend)/(double)uZipSize)*100;
+    if(bytesTotal>0){
+        if(zs>=bytesTotal){
+            porc = (((double)bytesSend)/(double)zs)*100;
         }else {
             porc = (((double)bytesSend)/bytesTotal)*100;
         }
