@@ -1,1 +1,1 @@
-Se compiló versión 1.76
+Se elimina curl
