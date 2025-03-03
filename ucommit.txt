@@ -1,1 +1,1 @@
-se elimina zoolan-release
+Se compiló versión 1.76

@@ -372,7 +372,10 @@ public slots:
     bool upkToFolder(QByteArray upk, QByteArray user, QByteArray key, QByteArray folderDestination);
     bool isFree(QString upk);
     bool loadUpk(QString upkLocation, bool closeAppLauncher, QString user, QString key);
-    bool downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl);
+
+    //bool downloadGit(QByteArray url, QByteArray localFolder, bool parseUrl);
+    Q_INVOKABLE bool downloadGit(QByteArray url, QByteArray localFolder);
+    Q_INVOKABLE bool downloadGit(QByteArray url, QByteArray branch, QByteArray localFolder, bool toProjectFolder);
     void loadQml(const QString qml);
     void restartApp();
     void restartApp(QString args);
@@ -397,7 +400,9 @@ public slots:
     //Funciones Network
     QByteArray getHttpFile(QByteArray url);
     void httpReadyRead();
-    bool downloadZipFile(QByteArray url, QByteArray ubicacion);
+    Q_INVOKABLE bool downloadZipFile(QByteArray url, QByteArray ubicacion);
+    Q_INVOKABLE bool downloadZipFile(QByteArray url, QByteArray ubicacion, bool parseUrl);
+    Q_INVOKABLE bool unzipFile(QByteArray zipFile, QByteArray location);
     void getZipFileSizeForDownload(QByteArray url);
     void setUZipFileSize();
 
@@ -416,19 +421,20 @@ public slots:
     void sqliteClose();
 
     //Funciones de Sistema de Archivos
-    void cd(QString folder);
-    QString currentFolderPath();
-    QString currentFolderName();
+    Q_INVOKABLE void cd(QString folder);
+    Q_INVOKABLE QString currentFolderPath();
+    Q_INVOKABLE QString currentFolderName();
     void deleteFile(QByteArray f);
-    bool clearDir(const QString path);
-    bool setFile(QByteArray fileName, QByteArray fileData);
-    bool setFile(QByteArray fileName, QByteArray fileData, QByteArray codec);
-    QString getFile(QByteArray n);
-    bool folderExist(const QByteArray folder);
-    QList<QString> getFileList(QByteArray folder, const QStringList filters, const bool listFolders);
-    bool isFolder(const QByteArray path);
-    bool mkdir(const QString path, bool absolute);
-    QList<QString> getFolderFileList(const QByteArray folder);
+    Q_INVOKABLE bool clearDir(const QString path);
+    Q_INVOKABLE bool setFile(QByteArray fileName, QByteArray fileData);
+    Q_INVOKABLE bool setFile(QByteArray fileName, QByteArray fileData, QByteArray codec);
+    Q_INVOKABLE QString getFile(QByteArray n);
+    Q_INVOKABLE bool folderExist(const QByteArray folder);
+    Q_INVOKABLE QList<QString> getFileList(QByteArray folder, const QStringList filters, const bool listFolders);
+    Q_INVOKABLE bool isFolder(const QByteArray path);
+    Q_INVOKABLE bool mkdir(const QString path);
+    Q_INVOKABLE bool mkdir(const QString path, bool absolute);
+    Q_INVOKABLE QList<QString> getFolderFileList(const QByteArray folder);
     QString getUpkTempPath();
     QString getUpksLocalPath();
     bool fileExist(QByteArray fileName);

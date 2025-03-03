@@ -1,21 +1,38 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+
+#include <QtTextToSpeech/QTextToSpeech>
+#include <QLoggingCategory>
+
 #ifdef Q_OS_ANDROID
 #include <QtAndroid>
 #endif
 #include "uk.h"
 
+#ifndef Q_OS_ANDROID
+#include "micurl.h"
+#endif
+
 int main(int argc, char *argv[])
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    //QGuiApplication app(argc, argv);
+
+
 
     QGuiApplication app(argc, argv);
     app.setApplicationName("Zooland");
     app.setOrganizationName("Unikode.org");
-    app.setOrganizationDomain("http://zool.loca.lt");
+    app.setOrganizationDomain("http://unikey.loca.lt");
     app.setApplicationVersion("1.31");
 
-    qmlRegisterType<UK>("unik.Unik", 1, 0, "Unik");
+    UK u;
+#ifndef Q_OS_ANDROID
+    MICURL curl;// = new MICURL(this); // Usa MICURL
+#endif
+
+    qmlRegisterType<UK>("unik.UnikHere", 1, 0, "UnikHere");
+
 
     QQmlApplicationEngine engine;
 
@@ -50,8 +67,55 @@ int main(int argc, char *argv[])
 #endif
     //<--Android Permissions
 
+    //--> TTS
+    QLoggingCategory::setFilterRules(QStringLiteral("qt.speech.tts=true \n qt.speech.tts.*=true"));
+    //∫qDebug()<<"TTS AVAILABLE ENGINES: "<<QTextToSpeech::availableEngines();
+    QTextToSpeech *tts2 = new QTextToSpeech(QTextToSpeech::availableEngines().at(0));
+    u.tts = qobject_cast<QTextToSpeech *>( tts2 );
+    Q_ASSERT( u.tts != nullptr );
+    QObject::connect(u.tts, SIGNAL(stateChanged(QTextToSpeech::State)), &u, SLOT(stateChanged(QTextToSpeech::State)));
+    //qDebug()<<"TTS AVAILABLE ENGINES: "<<u.tts->availableEngines();
+    u.ttsEnginesList = u.tts->availableEngines();
+    QVoice currentVoice = u.tts->voice();
+    foreach (QVoice voice, u.tts->availableVoices()){
+        u.ttsVoices.append(voice);
+        u.ttsVoicesList.append(QString("%1 - %2 - %3").arg(voice.name())
+                               .arg(QVoice::genderName(voice.gender()))
+                               .arg(QVoice::ageName(voice.age())));
+        if (voice.name() == currentVoice.name())
+            u.ttsCurrentVoice = u.ttsVoicesList.at(u.ttsVoicesList.count() - 1);
+    }
+    QVector<QLocale> locales = u.tts->availableLocales();
+    QLocale current = u.tts->locale();
+    foreach (const QLocale &locale, locales) {
+        QString name(QString("%1 (%2)")
+                     .arg(QLocale::languageToString(locale.language()))
+                     .arg(QLocale::countryToString(locale.country())));
+        QLocale localeVariant(locale);
+        u.ttsLocales.append(name);
+        u.ttsLocalesVariants.append(localeVariant);
+        if (locale.name() == current.name())
+            u.ttsCurrentLocale = locale;
+    }
+    QObject::connect(&u, &UK::ttsSelectingEngine, [&tts2, &u](const int index){
+        QString engineName = u.ttsEnginesList.at(index);
+        delete tts2;
+        if (engineName == "default"){
+            tts2 = new QTextToSpeech();
+        }else{
+            tts2 = new QTextToSpeech(engineName);
+        }
+        u.tts = tts2;
+    });
 
-    UK u;
+    engine.rootContext()->setContextProperty("ttsEngines", u.ttsEnginesList);
+    engine.rootContext()->setContextProperty("ttsVoices", u.ttsVoicesList);
+    engine.rootContext()->setContextProperty("ttsCurrentVoice", u.ttsCurrentVoice);
+    engine.rootContext()->setContextProperty("ttsLocales", u.ttsLocales);
+    //<-- TTS
+
+
+
     //QByteArray ufd=""; //Unik Folder Data
     //ufd.append(u.getPath(4));
     //ufd.append(u.getPath(8));
@@ -141,12 +205,17 @@ int main(int argc, char *argv[])
 
     engine.rootContext()->setContextProperty("modulesPath", modulesPath);
     engine.rootContext()->setContextProperty("updated", updated);
+#ifndef Q_OS_ANDROID
+    engine.rootContext()->setContextProperty("curl", &curl);
+#endif
+
     //engine.rootContext()->setContextProperty("folderIsWritable", folderIsWritable);
     //engine.rootContext()->setContextProperty("dato1FileData", dato1FileData);
 
 
     engine.rootContext()->setContextProperty("engine", &engine);
     engine.rootContext()->setContextProperty("mainZoolandPath", mainLocation);
+    engine.rootContext()->setContextProperty("unik", &u);
     //const QUrl url(mainLocation);
     QDir::setCurrent(u.getPath(4));
     engine.addImportPath(u.getPath(4)+"/modules");
@@ -186,7 +255,13 @@ int main(int argc, char *argv[])
     //const QUrl url2(QStringLiteral("file:///home/ns/nsp/zooland-release/mainZooland.qml"));
     bool fromZoolandRelease=true;
     if(fromZoolandRelease){
+        //Probando Zooland Release
         QByteArray carpetaDev="zooland-release";
+
+        //Probando Zooland Control Release
+        //carpetaDev="zooland-control-release";
+
+
         QDir::setCurrent(("/home/ns/nsp/"+carpetaDev));
         engine.addImportPath(QDir::currentPath()+"/modules");
         mainLocation="";
@@ -194,7 +269,7 @@ int main(int argc, char *argv[])
         mainLocation.append("/main.qml");
 
         //Descomentar para probar el qrc:main.qml mientras se programa en GNU/Linux.
-        //mainLocation="qrc:main.qml";
+        mainLocation="qrc:main.qml";
 
         const QUrl url3(mainLocation);
         engine.load(url3);

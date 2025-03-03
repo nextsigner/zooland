@@ -94,13 +94,25 @@ Rectangle{
     }
     function enter(){
         if(r.editHost){
+            var fp
+            var h
             if(ti.text!==''){
-                let fp=unik.getPath(4)+'/host'
-                let h=ti.text.replace(/ /g, '').replace(/\n/g, '')
-                unik.setFile(fp, h)
-                log('Se ha definido la url del servidor: '+h)
-                r.visible=false
-                app.checkNewVersion()
+                if(ti.text.indexOf('https://')>=0 && ti.text.indexOf('git')>=0){
+                    fp=unik.getPath(4)+'/url'
+                    h=ti.text.replace(/ /g, '').replace(/\n/g, '')
+                    unik.setFile(fp, h)
+                    log('Se ha definido la url de git: '+h)
+                    r.visible=false
+                    //app.checkNewVersion()
+                }else{
+                    fp=unik.getPath(4)+'/host'
+                    h=ti.text.replace(/ /g, '').replace(/\n/g, '')
+                    unik.setFile(fp, h)
+                    log('Se ha definido la url del servidor: '+h)
+                    r.visible=false
+                    app.checkNewVersion()
+                }
+
             }else{
                 let ms=new Date(Date.now()).getTime()
                 JS.getRD('https://nextsigner.github.io/zool/zool?r='+ms, setUrlFromGitHub)

@@ -6,6 +6,11 @@
 
 QT += qml quick sql websockets webchannel svg serialport
 QT += texttospeech
+QT += widgets
+QT += network core
+
+
+#QT += quick3d
 android:{
     QT += androidextras
 }
@@ -19,6 +24,7 @@ android:{
     include(openssl.pri)
     DESTDIR=$$PWD/..
 }else{
+    LIBS += -lcurl
     DESTDIR=/home/ns/nsp/build_zooland_linux_5.14.2
 }
 
@@ -42,6 +48,10 @@ SOURCES += \
         websocketclientwrapper.cpp \
         websockettransport.cpp
 
+android:{
+    SOURCES +=
+}
+
 RESOURCES += qml.qrc
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
@@ -63,6 +73,11 @@ HEADERS += $$PWD/quazip/*.h \
     chatserver.h \
     websocketclientwrapper.h \
     websockettransport.h
+
+android:{
+    HEADERS +=
+}
+
 SOURCES += $$PWD/quazip/*.cpp
 SOURCES += $$PWD/quazip/*.c
 
@@ -101,3 +116,13 @@ contains(ANDROID_TARGET_ARCH,armeabi-v7a) {
 }
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+
+# Ruta del script de incremento
+INCREMENT_SCRIPT = /home/ns/nsp/zooland/increment_version.sh
+
+# Regla POST_COMPILED para ejecutar el script después de cada compilación
+POST_COMPILED += increment_version
+
+# Definir la regla para ejecutar el script
+increment_version.commands = $$INCREMENT_SCRIPT
+QMAKE_EXTRA_TARGETS += increment_version
